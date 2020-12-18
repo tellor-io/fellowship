@@ -1,22 +1,36 @@
 pragma solidity ^0.7.0;
-
 import "interfaces/FellowshipInterface.sol"
+import "interfaces/ERC20Interface.sol"
 
 contract Staking{
 
-    event NewStake();
-    event StakeWithdrawn();
+    event NewStake(address _walker);
+    event StakeWithdrawn(address _walker);
 
-    function depositStake() external{
+    FellowshipInterface Fellowship;
+    address tellor;
+
+    modifier onlyWalker {
+        require(Fellowship.isWalker(msg.sender),
+            "Only walkers can call this function."
+        );
+        _;
+    }
+
+    constructor(address _fellowship){
+        Fellowship = FellowshipInterface(_fellowship);
+    }
+
+    function depositStake() external onlyWalker{
 
     }
 
-    function requestStakingWithdraw() external{
+    function requestStakingWithdraw() external onlyWalker{
 
     }
 
     //to pay out the reward
-    function recieveReward() external{
+    function recieveReward() external onlyWalker{
 
     }
 
@@ -24,18 +38,7 @@ contract Staking{
 
     }
 
-    function withdrawPayment() external{
+    function withdrawStake() external onlyWalker{
 
     }
-
-    
-
-    function withdrawStake() external{
-
-    }
-
-    function isStaked() external view returns(bool){
-
-    }
-    
 }

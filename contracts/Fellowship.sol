@@ -11,7 +11,6 @@ contract Felllowship{
         mapping(bytes32 => bytes32) information;
     }
 
-
     uint public voteCount;
     address public votingContract;
     address public stakingContract;
@@ -19,7 +18,9 @@ contract Felllowship{
 
     mapping(address => Walker) public walkers;
     mapping(uint => bytes) public relevantVoteInfo;
-    mapping(uint => uint) public voteTallys;
+    mapping(uint => mapping(address => bool)) public voted;
+    mapping(uint => uint) public voteTallies;
+    mapping(address => uint) public payments;
     address[] public fellowship;
     
     event NewVotingContract(address newVotingContract);
@@ -80,6 +81,19 @@ contract Felllowship{
     function transfer(address _token, address _to, uint _amount) external onlySystem{
         //should we check for overflow or success here?
         ERC20Interface.at(_token).transfer(_to,_amount);
+    }
+
+    //the base contract should hold balances of stakes
+    function updatePayments(uint _id, uint _amount) external onlySystem{
+        payments[_payer] = _amount;
+    }
+
+    function updateVoted(address _payer, uint _id) external onlySystem{
+        voted[_id][_payer] == true;
+    }
+    
+    function updateVotes(address _voter, uint _amount) external onlySystem{
+        votes[_voter] = _amount;
     }
 
     //checks whether they are a Walker
