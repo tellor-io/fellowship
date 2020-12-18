@@ -11,6 +11,7 @@ contract Felllowship{
         mapping(bytes32 => bytes32) information;
     }
 
+    uint public stakeAmount;
     uint public voteCount;
     address public votingContract;
     address public stakingContract;
@@ -19,7 +20,7 @@ contract Felllowship{
     mapping(address => Walker) public walkers;
     mapping(uint => bytes) public relevantVoteInfo;
     mapping(uint => mapping(address => bool)) public voted;
-    mapping(uint => uint) public voteTallies;
+    mapping(uint => int) public voteTallies;
     mapping(address => uint) public payments;
     address[] public fellowship;
     
@@ -96,6 +97,10 @@ contract Felllowship{
         votes[_voter] = _amount;
     }
 
+    function newVote() onlySystem external returns(uint _id){
+        voteCount++;
+        return voteCount;
+    }
     //checks whether they are a Walker
     function isWalker(address _a) external view returns(bool isWalker){
         return walkers[a].chosen;
@@ -107,5 +112,9 @@ contract Felllowship{
 
     function getWalkerInformation(address _walker, bytes32 _input) public external view returns(bytes32 _output){
         return walkers[walker].information(_input);
+    }
+
+    function setStakeAmount(uint _amount) public external onlySystem{
+        stakeAmount = _amount;
     }
 }

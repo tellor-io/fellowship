@@ -10,6 +10,7 @@ contract Disputes{
 
     constructor(address _fellowship){
         Fellowship = FellowshipInterface(_fellowship);
+        Fellowship.setDisputeContract(address(this))
     }
 
     

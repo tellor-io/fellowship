@@ -17,11 +17,14 @@ contract Staking{
         _;
     }
 
-    constructor(address _fellowship){
+    constructor(address _fellowship, uint _stakeAmount){
         Fellowship = FellowshipInterface(_fellowship);
+        Fellowship.setStakeAmount(_stakeAmount);
+        Fellowship.setStakingAddress(address(this));
     }
 
     function depositStake() external onlyWalker{
+        RC20Interface.at(_token).transfer(Fellowship.address,stakeAmount);
 
     }
 
