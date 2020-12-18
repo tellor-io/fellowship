@@ -15,6 +15,21 @@ contract Staking{
 
     }
 
+    //to pay out the reward
+    function recieveReward() external{
+
+    }
+
+    function depositPayment() external{
+
+    }
+
+    function withdrawPayment() external{
+
+    }
+
+    
+
     function withdrawStake() external{
 
     }
