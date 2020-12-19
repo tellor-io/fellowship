@@ -8,6 +8,7 @@ contract Felllowship{
         uint fellowshipIndex;
         string name;
         bool chosen;
+        uint balance;
         mapping(bytes32 => bytes32) information;
     }
 
@@ -21,7 +22,7 @@ contract Felllowship{
     
     event NewWalker(address walker);
     event NewWalkerInformation(address walker, bytes32 input, bytes32 output);
-    event WalkerRemoved(address walker);
+    event WalkerBanished(address walker);
 
     modifier onlyWalker {
         require(isWalker(msg.sender),
@@ -50,19 +51,21 @@ contract Felllowship{
         emit NewWalker(_newWalker);
     }
 
-    function removeWalker(address _oldWalker) public{
+    function banishWalker(address _oldWalker) public{
         require(msg.sender == address(this) || msg.sender == rivendale);
         walkers[_oldWalker].chosen = false;
         address element = fellowship[walkers[_oldWalker[fellowshipIndex]]];
         fellowship[walkers[_oldWalker[fellowshipIndex]]] = fellowship[fellowship.length - 1];
         fellowship.pop();
         walkers[_oldWalker][fellowshipIndex] = 0;
-        emit WalkerRemoved(_oldWalker);
+        emit WalkerBanished(_oldWalker);
     }
 
-    function setWalkerInformation(address _walker, bytes32 _input, bytes32 _output) external onlyRivendale{
-            walkers[_walker].information[_input] = _output;
-            emit NewWalkerInformation(_walker,_input,_output);
+
+    //a function to store input about keys on other chains or other necessary details;
+    function setWalkerInformation(bytes32 _input, bytes _output) external{
+            walkers[msg.sender].information[_input] = _output;
+            emit NewWalkerInformation(msg.sender,_input,_output);
     }
 
     //checks whether they are a Walker
@@ -89,7 +92,7 @@ contract Felllowship{
     
 
     function depositStake() external onlyWalker{
-        ERC20Interface.at(_token).transferFrom(msg.sender,address(this),stakeAmount);
+        ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),stakeAmount);
 
     }
 
@@ -97,8 +100,12 @@ contract Felllowship{
 
     }
 
-    function slashWalker(address _amount, bool _remove) external onlyRivendale{
+    function slashWalker(address _walker, uint _amount, bool _banish) external onlyRivendale{
         //slash a custom amount and remove if necessary
+        
+        if(_banish){
+            banishWalker(_walker);
+        }
     }
 
     //to pay out the reward
@@ -106,8 +113,10 @@ contract Felllowship{
 
     }
 
+    //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
     function depositPayment() external{
-
+        ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),_amount);
+        payments[msg.sender] += _amount;
     }
 
     function withdrawStake() external onlyWalker{
