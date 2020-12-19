@@ -11,32 +11,14 @@ contract Felllowship{
         mapping(bytes32 => bytes32) information;
     }
 
-    struct Vote{
-        uint walkerCount;
-        uint payeeCount;
-        uint TRBCount;
-        uint walkerTally;
-        uint payeeTally;
-        uint TRBTally;
-    }
 
-    mapping(uint => Vote) voteBreakdown;
     uint public stakeAmount;
-    uint public voteCount;
-    address public votingContract;
-    address public stakingContract;
-    address public disputesContract;
+    address public rivendale;
 
     mapping(address => Walker) public walkers;
-    mapping(uint => bytes) public relevantVoteInfo;
-    mapping(uint => mapping(address => bool)) public voted;
-    mapping(uint => int) public voteTallies;
     mapping(address => uint) public payments;
     address[] public fellowship;
     
-    event NewVotingContract(address newVotingContract);
-    event NewStakingContract(address newStakingContract);
-    event NewDisputesContract(address newDisputesContract);
     event NewWalker(address walker);
     event NewWalkerInformation(address walker, bytes32 input, bytes32 output);
     event WalkerRemoved(address walker);
@@ -47,7 +29,17 @@ contract Felllowship{
         );
         _;
     }
-    function newWalker(address _newWalker, string _name) internal{
+
+    modifier onlyRivendale {
+        require(msg.sender == rivendale,
+            "Only rivendale can call this function."
+        );
+        _;
+    }
+    
+    
+
+    function newWalker(address _newWalker, string _name) internal onlyRivendale{
         fellowship.push(_newWalker);
         walkers[_newWalker] = Walker{(
             date:now,
@@ -58,7 +50,8 @@ contract Felllowship{
         emit NewWalker(_newWalker);
     }
 
-    function removeWalker(address _oldWalker) internal {
+    function removeWalker(address _oldWalker) public{
+        require(msg.sender == address(this) || msg.sender == rivendale);
         walkers[_oldWalker].chosen = false;
         address element = fellowship[walkers[_oldWalker[fellowshipIndex]]];
         fellowship[walkers[_oldWalker[fellowshipIndex]]] = fellowship[fellowship.length - 1];
@@ -67,7 +60,7 @@ contract Felllowship{
         emit WalkerRemoved(_oldWalker);
     }
 
-    function setWalkerInformation(address _walker, bytes32 _input, bytes32 _output) external {
+    function setWalkerInformation(address _walker, bytes32 _input, bytes32 _output) external onlyRivendale{
             walkers[_walker].information[_input] = _output;
             emit NewWalkerInformation(_walker,_input,_output);
     }
@@ -85,18 +78,15 @@ contract Felllowship{
         return walkers[walker].information(_input);
     }
 
-    function setStakeAmount(uint _amount) public external {
+
+    function setStakeAmount(uint _amount) public external onlyRivendale {
         stakeAmount = _amount;
     }
    
-    function openDispute(){
-
+    function newRivendale(address _newRivendale) public external onlyRivendale{
+        rivendale = _newRivendale;
     }
-
-
-    function settleDispute(){
-
-    }
+    
 
     function depositStake() external onlyWalker{
         ERC20Interface.at(_token).transferFrom(msg.sender,address(this),stakeAmount);
@@ -105,6 +95,10 @@ contract Felllowship{
 
     function requestStakingWithdraw() external onlyWalker{
 
+    }
+
+    function slashWalker(address _amount, bool _remove) external onlyRivendale{
+        //slash a custom amount and remove if necessary
     }
 
     //to pay out the reward
@@ -120,33 +114,4 @@ contract Felllowship{
 
     }
 
-/*
-Initial Weighting
-    40% - Walker Vote
-    40% - Customers
-    20% - TRB Holders
-*/
-
-
-    function settleVote(uint _id){
-    }
-
-    function vote(uint _id, bool _supports){
-        if Fellowship.isWalker(msg.sender){
-            voteBreakdown[_id].walkerCount++;
-            if _supports {
-                voteBreakdown[_id].walkerTally++;
-            }
-        }
-        voteBreakdown[_id].payeeCount += Fellowship.payments[msg.sender];
-        voteBreakdown[_id].TRBCount += ERC20Interface(tellor).balanceOfAt(msg.sender,startBlock);
-        if _supports{
-            voteBreakdown[_id].payeeTally += Fellowship.payments[msg.sender];
-            voteBreakdown[_id].TRBTally += ERC20Interface(tellor).balanceOfAt(msg.sender,startBlock);
-        }
-        int _voteTally = 400(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)
-                        + 400(voteBreakdown[_id].walkerTally/voteBreakdown[_id].walkerCount)
-                        + 200(voteBreakdown[_id].TRBTally/voteBreakdown[_id].TRBCount);
-        Fellowship.updateVotes(msg.sender,_voteChange);
-    }
 }
