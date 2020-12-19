@@ -5,11 +5,11 @@ contract Felllowship{
 
     struct Walker {
         uint date;
+        uint status; //1 = goodStanding, 2 = too low of a balance,3 = pending withdraw, 4 = withdrawn 
         uint fellowshipIndex;
         string name;
-        bool chosen;
         uint balance;
-        mapping(bytes32 => bytes32) information;
+        mapping(bytes32 => bytes) information;
     }
 
 
@@ -45,6 +45,7 @@ contract Felllowship{
         walkers[_newWalker] = Walker{(
             date:now,
             name:_name,
+            status:1,
             fellowshipIndex:fellowship.length(),
             chosen:true
         )};
@@ -53,7 +54,6 @@ contract Felllowship{
 
     function banishWalker(address _oldWalker) public{
         require(msg.sender == address(this) || msg.sender == rivendale);
-        walkers[_oldWalker].chosen = false;
         address element = fellowship[walkers[_oldWalker[fellowshipIndex]]];
         fellowship[walkers[_oldWalker[fellowshipIndex]]] = fellowship[fellowship.length - 1];
         fellowship.pop();
@@ -70,7 +70,10 @@ contract Felllowship{
 
     //checks whether they are a Walker
     function isWalker(address _a) external view returns(bool isWalker){
-        return walkers[a].chosen;
+        if( walkers[_a].chosen & walkers[_a].balance > stakeAmount){
+            return true;
+        }
+        return false;
     }
 
     function getWalkerDetails(address _walker) public external view returns(uint,uint,string,bool){
@@ -120,7 +123,12 @@ contract Felllowship{
     }
 
     function withdrawStake() external onlyWalker{
-
+        require(walkers[msg.sender].status == 3);
+        require(now - walkers[msg.sender] > 14 days);
+        ERC20Interface.at(tellor).transfer(msg.sender,walkers[msg.sender].balance);
+        walkers[msg.sender].status = 4;
+        walkers[msg.sender].balance = 0; 
+        banishWalker(msg.sender);
     }
 
 }
