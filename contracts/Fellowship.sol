@@ -11,6 +11,16 @@ contract Felllowship{
         mapping(bytes32 => bytes32) information;
     }
 
+    struct Vote{
+        uint walkerCount;
+        uint payeeCount;
+        uint TRBCount;
+        uint walkerTally;
+        uint payeeTally;
+        uint TRBTally;
+    }
+
+    mapping(uint => Vote) voteBreakdown;
     uint public stakeAmount;
     uint public voteCount;
     address public votingContract;
@@ -31,29 +41,13 @@ contract Felllowship{
     event NewWalkerInformation(address walker, bytes32 input, bytes32 output);
     event WalkerRemoved(address walker);
 
-    modifier onlySystem {
-        require(msg.sender == votingContract || msg.sender == stakingContract || msg.sender == disputesContract,
-            "Only owner can call this function."
+    modifier onlyWalker {
+        require(isWalker(msg.sender),
+            "Only walkers can call this function."
         );
         _;
     }
-
-    function setVotingContract(address _newVotingContract) external onlySystem{
-        votingContract = _newVotingContract;
-        emit NewVotingContract(_newVotingContract);
-    }
-
-    function setStakingContract(address _newStakingContract) external onlySystem{
-        stakingContract = _newStakingContract;
-        emit NewStakingContract(_newStakingContract);
-    }
-
-    function setDisputesContract(address _newDisputesContract) external onlySystem{
-        disputesContract = _newDisputesContract;
-        emit NewDisputesContract(_newDisputesContract);
-    }
-
-    function newWalker(address _newWalker, string _name) external onlySystem{
+    function newWalker(address _newWalker, string _name) internal{
         fellowship.push(_newWalker);
         walkers[_newWalker] = Walker{(
             date:now,
@@ -64,7 +58,7 @@ contract Felllowship{
         emit NewWalker(_newWalker);
     }
 
-    function removeWalker(address _oldWalker) external onlySystem{
+    function removeWalker(address _oldWalker) internal {
         walkers[_oldWalker].chosen = false;
         address element = fellowship[walkers[_oldWalker[fellowshipIndex]]];
         fellowship[walkers[_oldWalker[fellowshipIndex]]] = fellowship[fellowship.length - 1];
@@ -73,34 +67,11 @@ contract Felllowship{
         emit WalkerRemoved(_oldWalker);
     }
 
-    function setWalkerInformation(address _walker, bytes32 _input, bytes32 _output) external onlySystem{
+    function setWalkerInformation(address _walker, bytes32 _input, bytes32 _output) external {
             walkers[_walker].information[_input] = _output;
             emit NewWalkerInformation(_walker,_input,_output);
     }
 
-    //the base contract should hold balances of stakes
-    function transfer(address _token, address _to, uint _amount) external onlySystem{
-        //should we check for overflow or success here?
-        ERC20Interface.at(_token).transfer(_to,_amount);
-    }
-
-    //the base contract should hold balances of stakes
-    function updatePayments(uint _id, uint _amount) external onlySystem{
-        payments[_payer] = _amount;
-    }
-
-    function updateVoted(address _payer, uint _id) external onlySystem{
-        voted[_id][_payer] == true;
-    }
-    
-    function updateVotes(address _voter, uint _amount) external onlySystem{
-        votes[_voter] = _amount;
-    }
-
-    function newVote() onlySystem external returns(uint _id){
-        voteCount++;
-        return voteCount;
-    }
     //checks whether they are a Walker
     function isWalker(address _a) external view returns(bool isWalker){
         return walkers[a].chosen;
@@ -114,7 +85,68 @@ contract Felllowship{
         return walkers[walker].information(_input);
     }
 
-    function setStakeAmount(uint _amount) public external onlySystem{
+    function setStakeAmount(uint _amount) public external {
         stakeAmount = _amount;
+    }
+   
+    function openDispute(){
+
+    }
+
+
+    function settleDispute(){
+
+    }
+
+    function depositStake() external onlyWalker{
+        ERC20Interface.at(_token).transferFrom(msg.sender,address(this),stakeAmount);
+
+    }
+
+    function requestStakingWithdraw() external onlyWalker{
+
+    }
+
+    //to pay out the reward
+    function recieveReward() external onlyWalker{
+
+    }
+
+    function depositPayment() external{
+
+    }
+
+    function withdrawStake() external onlyWalker{
+
+    }
+
+/*
+Initial Weighting
+    40% - Walker Vote
+    40% - Customers
+    20% - TRB Holders
+*/
+
+
+    function settleVote(uint _id){
+    }
+
+    function vote(uint _id, bool _supports){
+        if Fellowship.isWalker(msg.sender){
+            voteBreakdown[_id].walkerCount++;
+            if _supports {
+                voteBreakdown[_id].walkerTally++;
+            }
+        }
+        voteBreakdown[_id].payeeCount += Fellowship.payments[msg.sender];
+        voteBreakdown[_id].TRBCount += ERC20Interface(tellor).balanceOfAt(msg.sender,startBlock);
+        if _supports{
+            voteBreakdown[_id].payeeTally += Fellowship.payments[msg.sender];
+            voteBreakdown[_id].TRBTally += ERC20Interface(tellor).balanceOfAt(msg.sender,startBlock);
+        }
+        int _voteTally = 400(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)
+                        + 400(voteBreakdown[_id].walkerTally/voteBreakdown[_id].walkerCount)
+                        + 200(voteBreakdown[_id].TRBTally/voteBreakdown[_id].TRBCount);
+        Fellowship.updateVotes(msg.sender,_voteChange);
     }
 }
