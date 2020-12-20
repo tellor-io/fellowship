@@ -9,11 +9,14 @@ contract Felllowship{
         uint fellowshipIndex;
         string name;
         uint balance;
+        uint rewardBalance;
         mapping(bytes32 => bytes) information;
     }
 
-
+    uint public lastPayDate;
+    uint public rewardPool;
     uint public stakeAmount;
+    uint public fellowshipSize;
     address public rivendale;
 
     mapping(address => Walker) public walkers;
@@ -39,8 +42,8 @@ contract Felllowship{
     }
     
     
-
     function newWalker(address _newWalker, string _name) internal onlyRivendale{
+        require(fellowship.length < fellowshipSize);
         fellowship.push(_newWalker);
         walkers[_newWalker] = Walker{(
             date:now,
@@ -70,14 +73,15 @@ contract Felllowship{
 
     //checks whether they are a Walker
     function isWalker(address _a) external view returns(bool isWalker){
-        if( walkers[_a].chosen & walkers[_a].balance > stakeAmount){
+        if(walkers[_a].status == 1){
             return true;
         }
         return false;
     }
 
-    function getWalkerDetails(address _walker) public external view returns(uint,uint,string,bool){
-        return (walkers[a].date,walkers[a].fellowshipIndex,walkers[a].name,walkers[a].chosen);
+    //be sure to add all walker details in here
+    function getWalkerDetails(address _walker) public external view returns(uint,uint,string,uint){
+        return (walkers[a].date,walkers[a].fellowshipIndex,walkers[a].name,walkers[a].status);
     }
 
     function getWalkerInformation(address _walker, bytes32 _input) public external view returns(bytes32 _output){
@@ -89,23 +93,31 @@ contract Felllowship{
         stakeAmount = _amount;
     }
    
+    function setFellowshipSize(uint _amount) public external onlyRivendale {
+        fellowshipSize = _amount;
+    }
+
     function newRivendale(address _newRivendale) public external onlyRivendale{
         rivendale = _newRivendale;
     }
     
 
-    function depositStake() external onlyWalker{
-        ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),stakeAmount);
-
+    function depositStake(uint _amount) external onlyWalker{
+        ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),_amount);
+        walkers[_walker].balances -= _amount;
+        require(walkers[msg.sender].status == 1 || walkers[msg.sender].status == 2 || walkers[msg.sender].status == 3);
+        if(walkers[_walker].balances < stakeAmount){
+            walkers[_walker].status = 1;
+        }
     }
 
-    function requestStakingWithdraw() external onlyWalker{
-
-    }
 
     function slashWalker(address _walker, uint _amount, bool _banish) external onlyRivendale{
         //slash a custom amount and remove if necessary
-        
+        walkers[_walker].balances -= _amount;
+        if(walkers[_walker].balances < stakeAmount){
+            walkers[_walker].status = 2;
+        }
         if(_banish){
             banishWalker(_walker);
         }
@@ -113,7 +125,14 @@ contract Felllowship{
 
     //to pay out the reward
     function recieveReward() external onlyWalker{
+        ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),walkers[msg.sender].rewardBalance);
+    }
 
+    function calculatereward() external {
+        uint reward = rewardPool * (now - lastPayDate) / 6 * 30 days / fellowshipSize; //add a way for decimals if necessary.  Check this!
+        for i in fellowship{
+            walkers[i].rewardBalance += reward;
+        }
     }
 
     //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
@@ -122,6 +141,10 @@ contract Felllowship{
         payments[msg.sender] += _amount;
     }
 
+    function requestStakingWithdraw() external onlyWalker{
+        walkers[msg.sender].status = 3;
+        walkers[msg.sender].date = now;
+    }
     function withdrawStake() external onlyWalker{
         require(walkers[msg.sender].status == 3);
         require(now - walkers[msg.sender] > 14 days);
