@@ -15,6 +15,7 @@ contract Felllowship{
 
     uint public lastPayDate;
     uint public rewardPool;
+    uint public reward;
     uint public stakeAmount;
     uint public fellowshipSize;
     address public rivendale;
@@ -129,16 +130,19 @@ contract Felllowship{
     }
 
     function calculatereward() external {
-        uint reward = rewardPool * (now - lastPayDate) / 6 * 30 days / fellowshipSize; //add a way for decimals if necessary.  Check this!
         for i in fellowship{
             walkers[i].rewardBalance += reward;
         }
+        rewardPool -= reward * fellowship.length;
     }
 
     //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
     function depositPayment() external{
         ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),_amount);
         payments[msg.sender] += _amount;
+        rewardPool += _amount;
+        reward = rewardPool * (now - lastPayDate) / 6 * 30 days / fellowshipSize; //add a way for decimals if necessary.  Check this!
+        
     }
 
     function requestStakingWithdraw() external onlyWalker{
