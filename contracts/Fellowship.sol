@@ -1,7 +1,8 @@
 pragma solidity ^0.7.0;
 
+import "./interfaces/ERC20Interface.sol";
 
-contract Felllowship{
+contract Fellowship{
 
     struct Walker {
         uint date;
@@ -46,13 +47,13 @@ contract Felllowship{
     function newWalker(address _newWalker, string _name) internal onlyRivendale{
         require(fellowship.length < fellowshipSize);
         fellowship.push(_newWalker);
-        walkers[_newWalker] = Walker{(
+        walkers[_newWalker] = Walker({
             date:now,
             name:_name,
             status:1,
             fellowshipIndex:fellowship.length(),
             chosen:true
-        )};
+        });
         emit NewWalker(_newWalker);
     }
 
@@ -81,24 +82,24 @@ contract Felllowship{
     }
 
     //be sure to add all walker details in here
-    function getWalkerDetails(address _walker) public external view returns(uint,uint,string,uint){
+    function getWalkerDetails(address _walker) external view returns(uint,uint,string,uint){
         return (walkers[a].date,walkers[a].fellowshipIndex,walkers[a].name,walkers[a].status);
     }
 
-    function getWalkerInformation(address _walker, bytes32 _input) public external view returns(bytes32 _output){
+    function getWalkerInformation(address _walker, bytes32 _input) external view returns(bytes32 _output){
         return walkers[walker].information(_input);
     }
 
 
-    function setStakeAmount(uint _amount) public external onlyRivendale {
+    function setStakeAmount(uint _amount) external onlyRivendale {
         stakeAmount = _amount;
     }
    
-    function setFellowshipSize(uint _amount) public external onlyRivendale {
+    function setFellowshipSize(uint _amount) external onlyRivendale {
         fellowshipSize = _amount;
     }
 
-    function newRivendale(address _newRivendale) public external onlyRivendale{
+    function newRivendale(address _newRivendale) external onlyRivendale{
         rivendale = _newRivendale;
     }
     
@@ -130,7 +131,7 @@ contract Felllowship{
     }
 
     function calculatereward() external {
-        for i in fellowship{
+        for(uint i=0; i < walkers.length(); i++){
             walkers[i].rewardBalance += reward;
         }
         rewardPool -= reward * fellowship.length;
