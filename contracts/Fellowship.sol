@@ -4,15 +4,20 @@ pragma solidity ^0.7.0;
 contract Felllowship{
 
     struct Walker {
+        //Why we need to keep track of date?
         uint date;
         uint status; //1 = goodStanding, 2 = too low of a balance,3 = pending withdraw, 4 = withdrawn 
         uint fellowshipIndex;
+        //Reorder this so that all uints are together and make use of thight packing. Also, do we really need a name?
         string name;
         uint balance;
         uint rewardBalance;
+        //I would take this mapping outside of the struct.
+        // makew it address=>bytes32=>bytes 
         mapping(bytes32 => bytes) information;
     }
 
+    // Maybe this should also be configurable by the rivendale
     uint public lastPayDate;
     uint public rewardPool;
     uint public reward;
@@ -42,7 +47,7 @@ contract Felllowship{
         _;
     }
     
-    
+    //This needs to be external
     function newWalker(address _newWalker, string _name) internal onlyRivendale{
         require(fellowship.length < fellowshipSize);
         fellowship.push(_newWalker);
@@ -104,6 +109,7 @@ contract Felllowship{
     
 
     function depositStake(uint _amount) external onlyWalker{
+        //Is there any advantage in depositing any amount? What about restricting to only the stake amount. This way we do not have //// to keep track of balances
         ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),_amount);
         walkers[_walker].balances -= _amount;
         require(walkers[msg.sender].status == 1 || walkers[msg.sender].status == 2 || walkers[msg.sender].status == 3);
@@ -137,6 +143,8 @@ contract Felllowship{
     }
 
     //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
+
+    // I think it would be simpler to make payments a two way step. 1 - Deposit tokens, 2 - iterate through all members and add the rewards to their balance. No need to keep track of dates or anything. And if the fellowship doesn't change in size(which won't be often) it can accumulate multiple payments util the rewards are worthwhile to distribute.
     function depositPayment() external{
         ERC20Interface.at(tellor).transferFrom(msg.sender,address(this),_amount);
         payments[msg.sender] += _amount;

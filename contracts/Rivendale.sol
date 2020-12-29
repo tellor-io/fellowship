@@ -11,6 +11,9 @@ contract Rivendale{
         uint walkerTally;
         uint payeeTally;
         uint TRBTally;
+        //It's crazy to store the whole data like this on chain.
+        // A better approach is to hash it, and make the `execute` function take the full data as a parameter
+        // Also is probably better to separate the excution to another struct, with `to`, `value` and `data`.
         bytes data;
         uint tally;
         bool executed;
@@ -44,6 +47,16 @@ Initial Weighting
         if(votes[_id].tally > 500) {
             address addr = fellowship;
             bytes memory votes[_id].data;
+            // This can be almost all done with pure solidity:
+            // (bool succ, res bytes) = fellowship.call(data);
+            // If we want to revert add:
+            // if (!succ) {
+            //     assembly {
+            //         returndatacopy(0, 0, returndatasize())
+            //         revert(0, returndatasize())
+            //     }
+            // }
+            // But actually reverting here is a bad idea because it can lock the contract. Better just to set executed as true.
             assembly {
                 let result := call(not(0), addr, add(_calldata, 0x20), mload(_calldata), 0, 0)
                 let size := returndatasize
@@ -61,6 +74,8 @@ Initial Weighting
         votes[_id].executed = true;
     }
 
+
+    //This function seems overly complex. 
     function vote(uint _id, bool _supports){
         Fellowship _fellowship = Fellowship(fellowship);
         if _fellowship.isWalker(msg.sender){
@@ -79,6 +94,7 @@ Initial Weighting
         voteBreakdown[_id].tally = 400(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)
                         + 400(voteBreakdown[_id].walkerTally/voteBreakdown[_id].walkerCount)
                         + 200(voteBreakdown[_id].TRBTally/voteBreakdown[_id].TRBCount);
+        // need to prevent double vote by adding a require                
         voted[_id][msg.sender] = true;
     }
 }
