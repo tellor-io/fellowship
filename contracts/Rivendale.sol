@@ -27,10 +27,13 @@ contract Rivendale{
         fellowship = _fellowship;
     }
 
-    function openVote(bytes _function) external {
-        startBlock = block.number;
-        startDate = block.timestamp;
+    function openVote(bytes memory _function) external {
         //increment vote count
+        voteCount += 1;
+        //set struct variables
+        voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
+        voteBreakdown[voteCount].startDate = block.timestamp;
+
         //assign id
         //set struct variables
         //
@@ -81,10 +84,10 @@ Initial Weighting
         }
         //increment payee contribution total by voter's contribution
         voteBreakdown[_id].payeeCount += _fellowship.payments[msg.sender];
-        voteBreakdown[_id].TRBCount += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender,startBlock);
+        voteBreakdown[_id].TRBCount += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender,voteBreakdown[_id].startBlock);
         if (_supports) {
             voteBreakdown[_id].payeeTally += _fellowship.payments[msg.sender];
-            voteBreakdown[_id].TRBTally += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender,startBlock);
+            voteBreakdown[_id].TRBTally += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender, voteBreakdown[_id].startBlock);
         }
         //create a way for these to be changed / upgraded? 
         voteBreakdown[_id].tally = 400(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)

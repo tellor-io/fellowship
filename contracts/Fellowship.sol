@@ -20,7 +20,11 @@ contract Fellowship{
     uint public stakeAmount;
     uint public fellowshipSize;
     address public rivendale;
-    address public tellor = 0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5; //replace with constructor
+    address public tellor;
+
+    constructor(address _tellor) {
+        tellor = _tellor;
+    }
 
     mapping(address => Walker) public walkers;
     mapping(address => uint) public payments;
