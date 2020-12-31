@@ -1,5 +1,7 @@
 #node
 node_modules
+#first line
+node_modules/
 /node_modules
 ./node_modules
 # Logs
