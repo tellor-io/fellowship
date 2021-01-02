@@ -16,9 +16,8 @@ contract Rivendale{
         bool executed;
         uint startDate;
         uint startBlock;
-        mapping(address => bool) voted;
     }
-
+    mapping(address => mapping(uint=>bool)) voted;
     mapping(uint => Vote) voteBreakdown;
     uint public voteCount;
     address fellowship;
@@ -59,6 +58,7 @@ Initial Weighting
     }
 
     function vote(uint _id, bool _supports) external {
+        require(!voted[msg.sender][_id]);
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
         //If the sender is a supported Walker (voter)
@@ -71,16 +71,17 @@ Initial Weighting
             }
         }
         //increment payee contribution total by voter's contribution
-        voteBreakdown[_id].payeeCount += _fellowship.payments[msg.sender];
-        voteBreakdown[_id].TRBCount += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender,voteBreakdown[_id].startBlock);
+        voteBreakdown[_id].payeeCount += _fellowship.payments(msg.sender);
+        uint _bal =  ERC20Interface(_fellowship.tellor()).balanceOfAt(msg.sender,voteBreakdown[_id].startBlock);
+        voteBreakdown[_id].TRBCount += _bal;
         if (_supports) {
-            voteBreakdown[_id].payeeTally += _fellowship.payments[msg.sender];
-            voteBreakdown[_id].TRBTally += ERC20Interface(_fellowship.tellor).balanceOfAt(msg.sender, voteBreakdown[_id].startBlock);
+            voteBreakdown[_id].payeeTally += _fellowship.payments(msg.sender);
+            voteBreakdown[_id].TRBTally +=_bal;
         }
         //create a way for these to be changed / upgraded? 
-        voteBreakdown[_id].tally = 400(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)
-                        + 400(voteBreakdown[_id].walkerTally/voteBreakdown[_id].walkerCount)
-                        + 200(voteBreakdown[_id].TRBTally/voteBreakdown[_id].TRBCount);
-        voteBreakdown[_id][msg.sender] = true;
+        voteBreakdown[_id].tally = 400*(voteBreakdown[_id].payeeTally/voteBreakdown[_id].payeeCount)
+                        + 400*(voteBreakdown[_id].walkerTally/voteBreakdown[_id].walkerCount)
+                        + 200*(voteBreakdown[_id].TRBTally/voteBreakdown[_id].TRBCount);
+        voted[msg.sender][_id] = true;
     }
 }
