@@ -47,25 +47,13 @@ Initial Weighting
 */
     //does this work? We need to make sure if it reverts we have a way to close out vote? (or do we?)
     //it should be able to run arbitrary functions that we vote on
-    function settleVote(uint _id) external {
+    function settleVote(uint _id) external returns(bool succ, bytes memory res) {
         require(block.timestamp - voteBreakdown[_id].startDate > 7 days);
         require(!voteBreakdown[_id].executed);
         if(voteBreakdown[_id].tally > 500) {
             address addr = fellowship;
             bytes memory data = voteBreakdown[_id].data;
-            assembly {
-                let result := call(not(0), addr, add(_calldata, 0x20), mload(_calldata), 0, 0)
-                let size := returndatasize()
-                let ptr := mload(0x40)
-                returndatacopy(ptr, 0, size)
-                switch result
-                    case 0 {
-                        revert(ptr, size)
-                    }
-                    default {
-                        return(ptr, size)
-                    }
-            }
+            (succ,res) = fellowship.call(data);
         }
         voteBreakdown[_id].executed = true;
     }
@@ -74,7 +62,7 @@ Initial Weighting
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
         //If the sender is a supported Walker (voter)
-        if (fellowship.isWalker(msg.sender)){
+        if (_fellowship.isWalker(msg.sender)){
             //Increment this election's number of voters
             voteBreakdown[_id].walkerCount++;
             //If they vote yes, add to yes votes Tally
