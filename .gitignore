@@ -5,6 +5,10 @@ node_modules
 node_modules/
 /node_modules
 ./node_modules
+
+#artifacts
+/artifacts
+artifacts
 # Logs
 logs
 *.log
