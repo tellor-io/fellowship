@@ -106,6 +106,41 @@
       "artifacts": [
         "Rivendale"
       ]
+    },
+    "/home/nfett/coder/fellowship/contracts/testContracts/ERC20.sol": {
+      "lastModificationDate": 1609779785799,
+      "contentHash": "f879cf70d08d752ed2e2f590db194942",
+      "sourceName": "contracts/testContracts/ERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.7.0"
+      ],
+      "artifacts": [
+        "ERC20",
+        "SafeMath"
+      ]
     }
   }
 }
