@@ -38,7 +38,7 @@ contract Fellowship{
     }
 
     modifier onlyRivendale {
-        require(msg.sender == rivendale,
+        require(msg.sender == rivendale || rivendale == address(0),
             "Only rivendale can call this function."
         );
         _;
