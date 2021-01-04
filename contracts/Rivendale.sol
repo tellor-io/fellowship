@@ -50,7 +50,6 @@ Initial Weighting
         require(block.timestamp - voteBreakdown[_id].startDate > 7 days);
         require(!voteBreakdown[_id].executed);
         if(voteBreakdown[_id].tally > 500) {
-            address addr = fellowship;
             bytes memory data = voteBreakdown[_id].data;
             (succ,res) = fellowship.call(data);
         }

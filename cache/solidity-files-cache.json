@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
-      "lastModificationDate": 1609442255459,
-      "contentHash": "70052dbb77070c2260af33a1ef818b5b",
+      "lastModificationDate": 1609789214096,
+      "contentHash": "84e194962e114c3f00dcb4ddca250b2e",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -72,8 +72,8 @@
       ]
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
-      "lastModificationDate": 1609442255459,
-      "contentHash": "ce53f7b389dd9b265c092d3577ddfc81",
+      "lastModificationDate": 1609789214096,
+      "contentHash": "ea59a26f5f600be41e81f3ea9f1a844b",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -105,6 +105,41 @@
       ],
       "artifacts": [
         "Rivendale"
+      ]
+    },
+    "/home/nfett/coder/fellowship/contracts/testContracts/ERC20.sol": {
+      "lastModificationDate": 1609789214096,
+      "contentHash": "f879cf70d08d752ed2e2f590db194942",
+      "sourceName": "contracts/testContracts/ERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.7.0"
+      ],
+      "artifacts": [
+        "ERC20",
+        "SafeMath"
       ]
     }
   }
