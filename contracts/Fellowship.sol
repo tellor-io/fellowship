@@ -64,7 +64,6 @@ contract Fellowship{
 
     function banishWalker(address _oldWalker) public{
         require(msg.sender == address(this) || msg.sender == rivendale);
-        address element = fellowship[walkers[_oldWalker].fellowshipIndex];
         fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
