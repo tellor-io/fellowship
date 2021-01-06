@@ -48,8 +48,8 @@ contract Fellowship{
         tellor = _tellor;
     }
 
-    function newWalker(address _newWalker, string memory _name) internal onlyRivendale{
-        require(fellowship.length < fellowshipSize);
+    function newWalker(address _newWalker, string memory _name) external onlyRivendale{
+        require(fellowship.length < fellowshipSize, "Fellowship is already Full");
         fellowship.push(_newWalker);
         walkers[_newWalker] = Walker({
             date:block.timestamp,
@@ -63,7 +63,7 @@ contract Fellowship{
     }
 
     function banishWalker(address _oldWalker) public{
-        require(msg.sender == address(this) || msg.sender == rivendale);
+        require(msg.sender == address(this) || msg.sender == rivendale, "Walker cannot be banished");
         fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
@@ -111,7 +111,7 @@ contract Fellowship{
     function depositStake(uint _amount) external onlyWalker{
         ERC20Interface(tellor).transferFrom(msg.sender,address(this),_amount);
         walkers[msg.sender].balance -= _amount;
-        require(walkers[msg.sender].status == 1 || walkers[msg.sender].status == 2 || walkers[msg.sender].status == 3);
+        require(walkers[msg.sender].status == 1 || walkers[msg.sender].status == 2 || walkers[msg.sender].status == 3, "Walker has wrong status");
         if(walkers[msg.sender].balance < stakeAmount){
             walkers[msg.sender].status = 1;
         }
@@ -155,8 +155,8 @@ contract Fellowship{
         walkers[msg.sender].date = block.timestamp;
     }
     function withdrawStake() external onlyWalker{
-        require(walkers[msg.sender].status == 3);
-        require(block.timestamp - walkers[msg.sender].date > 14 days);
+        require(walkers[msg.sender].status == 3, "walker has wrong status");
+        require(block.timestamp - walkers[msg.sender].date > 14 days, "has not been long enough to withdraw");
         ERC20Interface(tellor).transfer(msg.sender,walkers[msg.sender].balance);
         walkers[msg.sender].status = 4;
         walkers[msg.sender].balance = 0; 

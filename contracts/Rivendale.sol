@@ -66,8 +66,8 @@ Initial Weighting
     //does this work? We need to make sure if it reverts we have a way to close out vote? (or do we?)
     //it should be able to run arbitrary functions that we vote on
     function settleVote(uint _id) external returns(bool succ, bytes memory res) {
-        require(block.timestamp - voteBreakdown[_id].startDate > 7 days);
-        require(!voteBreakdown[_id].executed);
+        require(block.timestamp - voteBreakdown[_id].startDate > 7 days, "vote has not been open long enough");
+        require(!voteBreakdown[_id].executed, "vote has already been settled");
         if(voteBreakdown[_id].tally > 500) {
             bytes memory data = voteBreakdown[_id].data;
             (succ,res) = fellowship.call(data);
@@ -77,7 +77,7 @@ Initial Weighting
     }
 
     function vote(uint _id, bool _supports) external {
-        require(!voted[msg.sender][_id]);
+        require(!voted[msg.sender][_id], "address has already voted");
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
         //If the sender is a supported Walker (voter)
