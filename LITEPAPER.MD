@@ -1,6 +1,8 @@
-## The Fellowship
+## The Fellowship (DRAFT)
 
 <img src="./public/fellowship.png">
+
+#### Note: Everything in this repo is in the draft stage and open for comment
 
 The Fellowship is a group of known parties, secured by decentralized governance who will sign data and provide oracle services to products that are not fit for the current Tellor design.  By allowing for a crypto-economically secured method of providing signed data to non-ethereum chains such as rollups, competing L1’s, and other custom structures, the Fellowship will fulfill the market’s need for a more flexible oracle while truly decentralized designs like Tellor work within the confines of current technological limitations. 
 The on-chain portion of the Fellowship is a governance contract to select addresses to serve as trusted signers in off-chain systems.  Parties utilizing the data feeds (users) will negotiate off-chain contracts which will include payments to the Fellowship in exchange for oracle services.  Users, data providers, and TRB holders can vote to slash or remove data providers as well as provide retribution to users affected by misbehaving data providers.  Token payments to the Fellowship contract are split between providers as well as token holders in the TRB system. 
