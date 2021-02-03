@@ -12,17 +12,20 @@ Tellor currently provides data for applications on Ethereum.  The nature of the 
 ### Design
 
 The design of the Fellowship is a smart contract on Ethereum to choose trusted signatories (termed “walkers”) to provide off-chain services (namely provision of data) in some fashion.  The main functions of the smart contract include: 
-Storing details of off-chain contracts
-Staking and removal of stake by the walkers
-Payments and distribution from users to the Fellowship
-Voting for new walkers or slashing/removing current
+
+* Storing details of off-chain contracts
+* Staking and removal of stake by the walkers
+* Payments and distribution from users to the Fellowship
+* Voting for new walkers or slashing/removing current
+
 The system consists of three main parties: walkers, data requesters, and TRB holders. Initially there will be 9 walkers.  The flow of the system is as follows:
 
-Initial 9 walkers are selected on deployment
-Walkers must stake TRB.  Initially:
-Stake Amount = min(100, 10% * expected yearly payout) - This is to ensure that if payments come into the system, walkers will need to stake more.  
+Initial 9 walkers are selected on deployment.  Walkers must stake TRB.  Initially, Stake Amount = min(100, 10% * expected yearly payout).This is to ensure that if payments come into the system, walkers will need to stake more.  
+
 Parties requesting services contact the fellowship off-chain and negotiate a deal (e.g. sign prices for 6 months for 100 TRB).  Details of the contract are stored in IPFS and an identifier is stored in the Fellowship contract. The user then sends the 100 TRB to the contract to initiate.  
-Payments to the contract are depleted (paid out) on a linear basis over 6 months.  If a new payment is added, a new payment amount is generated and a new 6 month period begins. 
+
+Payments to the contract are depleted (paid out) on a linear basis over 6 months.  If a new payment is added, a new payment amount is generated and a new 6 month period begins.
+
 Walkers can withdraw anytime, but can only become a provider through an election / vote.  A 2 week waiting period to withdraw is also in place to accommodate the potential for that walker gets disputed, a process which utilizes a 1 week voting period.
 Parties can dispute walkers and slash custom amounts from them (e.g. the slashing amount can be zero but the walker could be banished from the Fellowship)
 
@@ -30,27 +33,37 @@ Parties can dispute walkers and slash custom amounts from them (e.g. the slashin
 
 
 #### Applicable Voting Actions
+
 In order to open a vote, it requires to burn 1 TRB to initiate an action and the vote has to reach a 20% quorum for it to pass. Parties may only vote on certain things. The voting actions that the contract allows are:
-What contracts to accept / parties to work with
-How to change variables in the system (e.g. increase / decrease the number of walkers)
-When to slash or banish a walker
-Selection of a new walker when a vacancy appears
-Vacancies and Elections
+
+* What contracts to accept / parties to work with
+* How to change variables in the system (e.g. increase / decrease the number of walkers)
+* When to slash or banish a walker
+* Selection of a new walker when a vacancy appears
+
+#### Vacancies and Elections
+
 Elections in the system will happen yearly from when the walker was initiated.  When a vacancy appears, any party can nominate someone and it goes to a week long vote.
 
 #### Voting Power
-40% : 9 Walkers
-40% : Data Requesters
-20% : TRB Holders
+
+* 40% : 9 Walkers
+* 40% : Data Requesters
+* 20% : TRB Holders
+
 All actions must reach a 20% quorum to pass.  
  It must be presumed that the walkers and the users are naturally opposed to each other in terms of slashing or challenging results.  To offset a potential tie and mitigate the risk of one party  controlling the others, TRB holders can also vote as a presumed neutral party. 
 
 ### Business Model
 
 Contracts for parties to utilize the Fellowship are negotiated off-chain.  Contracts are then accepted by the community through a vote (with a 20% quorum, only 5/9 of the walkers are needed to get it to pass with no objection).  
+
 An example contract would be:
+
 A zk-rollup needs a custom oracle pushing prices every 5 minutes on 10 different assets.  The Fellowship signers will sign these prices and send to specified nodes / an api.  The customer will provide software specifications (e.g. a PR into the Telliot miner) and will pay 100 TRB/ month. 
+
 The contract will continue for up to one year assuming payments. 
+
 The customer can dispute utilizing the on-chain dispute mechanism
 
 ### Roadmap
