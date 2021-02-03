@@ -1,6 +1,6 @@
 # Fellowship
 
-<img src="./public/fellowshipSnow.jpg">
+<img src="./public/fellowshipSnow.png">
 
 The Fellowship is a group of known parties, secured by decentralized governance who will sign data and provide oracle services to products that are not fit for the current Tellor design. 
 
