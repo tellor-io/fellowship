@@ -130,7 +130,7 @@ contract Fellowship {
     function setFellowshipSize(uint256 _amount) external onlyRivendale {
         fellowshipSize = _amount;
     }
-q
+
     function newRivendale(address _newRivendale) external onlyRivendale {
         rivendale = _newRivendale;
     }
