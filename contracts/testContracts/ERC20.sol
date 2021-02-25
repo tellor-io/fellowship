@@ -1,4 +1,5 @@
-pragma solidity ^0.7.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 library SafeMath {
 
@@ -36,9 +37,9 @@ contract ERC20{
     string private _symbol;
     uint8 private _decimals;
 
-    constructor (string memory name, string memory symbol) {
-        _name = name;
-        _symbol = symbol;
+    constructor (string memory tokenName, string memory tokenSymbol) {
+        _name = tokenName;
+        _symbol = tokenSymbol;
         _decimals = 18;
     }
 

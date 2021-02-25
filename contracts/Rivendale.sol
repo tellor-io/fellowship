@@ -1,4 +1,5 @@
-pragma solidity 0.7.4;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.0;
 
 import "./Fellowship.sol";
 

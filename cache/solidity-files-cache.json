@@ -2,11 +2,11 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
-      "lastModificationDate": 1609789214096,
-      "contentHash": "664dce4a2e0498400f3344f7bef26d62",
+      "lastModificationDate": 1614262752241,
+      "contentHash": "44de6be38108a3daa715af9d4cd6a19b",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
-        "version": "0.7.3",
+        "version": "0.8.0",
         "settings": {
           "optimizer": {
             "enabled": false,
@@ -31,18 +31,18 @@
         "./interfaces/ERC20Interface.sol"
       ],
       "versionPragmas": [
-        "^0.7.0"
+        "0.8.0"
       ],
       "artifacts": [
         "Fellowship"
       ]
     },
     "/home/nfett/coder/fellowship/contracts/interfaces/ERC20Interface.sol": {
-      "lastModificationDate": 1609789214096,
-      "contentHash": "bc84a84008df3b4fa8be0bb7445cbd9b",
+      "lastModificationDate": 1612374457243,
+      "contentHash": "6d086dc40ce263aeba4bda21862f2441",
       "sourceName": "contracts/interfaces/ERC20Interface.sol",
       "solcConfig": {
-        "version": "0.7.3",
+        "version": "0.8.0",
         "settings": {
           "optimizer": {
             "enabled": false,
@@ -65,18 +65,18 @@
       },
       "imports": [],
       "versionPragmas": [
-        "^0.7.0"
+        "^0.8.0"
       ],
       "artifacts": [
         "ERC20Interface"
       ]
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
-      "lastModificationDate": 1609789214096,
-      "contentHash": "92bccb56d45ec3de7a2631be5876fa4e",
+      "lastModificationDate": 1614262752244,
+      "contentHash": "dd1beda7079561637c069e0c6cabc055",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
-        "version": "0.7.3",
+        "version": "0.8.0",
         "settings": {
           "optimizer": {
             "enabled": false,
@@ -101,18 +101,18 @@
         "./Fellowship.sol"
       ],
       "versionPragmas": [
-        "^0.7.0"
+        "0.8.0"
       ],
       "artifacts": [
         "Rivendale"
       ]
     },
     "/home/nfett/coder/fellowship/contracts/testContracts/ERC20.sol": {
-      "lastModificationDate": 1609789214096,
-      "contentHash": "f879cf70d08d752ed2e2f590db194942",
+      "lastModificationDate": 1612374457244,
+      "contentHash": "696fea890a7959dfd1b1a155b35fcb61",
       "sourceName": "contracts/testContracts/ERC20.sol",
       "solcConfig": {
-        "version": "0.7.3",
+        "version": "0.8.0",
         "settings": {
           "optimizer": {
             "enabled": false,
@@ -135,7 +135,7 @@
       },
       "imports": [],
       "versionPragmas": [
-        "^0.7.0"
+        "^0.8.0"
       ],
       "artifacts": [
         "ERC20",
