@@ -7,6 +7,7 @@ contract("Rivendale Tests", function(accounts) {
   let fellowship;
   let rivendale;
   let token;
+  let data;
 
   beforeEach("Setup contract for each test", async function() {
     token = await ERC20.new("Test","TEST");
@@ -16,8 +17,18 @@ contract("Rivendale Tests", function(accounts) {
     fellowship = await Fellowship.new(token.address);
     rivendale = await Rivendale.new(fellowship.address);
   });
-
+  it("check correct weights", async function() {
+    let vars = await rivendale.getWeights();
+    assert(vars[0] == 200)
+    assert(vars[1] == 400)
+    assert(vars[2] == 400)
+    assert(vars[0]*1 + vars[1]*1 + vars[2]*1 == 1000, "the weights should add up to 100%")
+  });
   it("Open Vote", async function() {
+    await token.approve(fellowship.address,web3.utils.toWei("1", "ether"));
+    data = await fellowship.encodeFunctionData("newWalker");
+    await rivendale.openVote(fellowship.address,data)
+    console.log(data)
     assert(0==1)
   });
   it("Vote / Settle Vote", async function() {

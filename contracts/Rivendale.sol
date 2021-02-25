@@ -50,6 +50,10 @@ contract Rivendale {
         weights.walkerWeight = _walker;
     }
 
+    function getWeights() external view returns(uint256,uint256,uint256){
+        return (weights.trbWeight,weights.userWeight,weights.walkerWeight );
+    }
+
     function openVote(address destination, bytes memory _function) external {
         require(
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
@@ -64,7 +68,7 @@ contract Rivendale {
         voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
         voteBreakdown[voteCount].startDate = block.timestamp;
         bytes32 actionHash =
-            keccak256(abi.encodePacked(destination, _function));
+        keccak256(abi.encodePacked(destination, _function));
         voteBreakdown[voteCount].ActionHash = actionHash;
         emit NewVote(voteCount, destination, _function);
     }
@@ -93,7 +97,7 @@ Initial Weighting
         );
         require(!voteBreakdown[_id].executed, "vote has already been settled");
         if (voteBreakdown[_id].tally > 500) {
-            (succ, res) = destination.call(data);
+            (succ, res) = destination.call(data); //can we call this contract?
         }
         voteBreakdown[_id].executed = true;
         emit VoteSettled(_id, voteBreakdown[_id].tally > 500);
