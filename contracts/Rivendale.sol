@@ -58,7 +58,7 @@ contract Rivendale {
         require(
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
                 msg.sender,
-                address(0),
+                fellowship,
                 1e18
             )
         );
@@ -105,6 +105,7 @@ Initial Weighting
 
     function vote(uint256 _id, bool _supports) external {
         require(!voted[msg.sender][_id], "address has already voted");
+        require(voteBreakdown[_id].startDate > 0, "vote must be started")
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
         //If the sender is a supported Walker (voter)
@@ -138,5 +139,21 @@ Initial Weighting
             (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
+    }
+
+    function getVoteInfo(uint256 _id) external view returns(uint256[9] memory,bool,bytes32){
+        return(
+            [voteBreakdown[_id].walkerCount,
+            voteBreakdown[_id].payeeCount,
+            voteBreakdown[_id].TRBCount,
+            voteBreakdown[_id].walkerTally,
+            voteBreakdown[_id].payeeTally,
+            voteBreakdown[_id].TRBTally,
+            voteBreakdown[_id].tally,
+            voteBreakdown[_id].startDate,
+            voteBreakdown[_id].startBlock],
+            voteBreakdown[_id].executed,
+            voteBreakdown[_id].ActionHash
+        );
     }
 }

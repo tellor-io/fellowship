@@ -2,7 +2,7 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
-      "lastModificationDate": 1614262752241,
+      "lastModificationDate": 1614284331515,
       "contentHash": "44de6be38108a3daa715af9d4cd6a19b",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
@@ -38,7 +38,7 @@
       ]
     },
     "/home/nfett/coder/fellowship/contracts/interfaces/ERC20Interface.sol": {
-      "lastModificationDate": 1612374457243,
+      "lastModificationDate": 1614284331516,
       "contentHash": "6d086dc40ce263aeba4bda21862f2441",
       "sourceName": "contracts/interfaces/ERC20Interface.sol",
       "solcConfig": {
@@ -72,8 +72,8 @@
       ]
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
-      "lastModificationDate": 1614262752244,
-      "contentHash": "8984aec98a48fb493da178251a3cf234",
+      "lastModificationDate": 1614284331515,
+      "contentHash": "766b357493993b5063680aee6877c312",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -108,7 +108,7 @@
       ]
     },
     "/home/nfett/coder/fellowship/contracts/testContracts/ERC20.sol": {
-      "lastModificationDate": 1612374457244,
+      "lastModificationDate": 1614284331516,
       "contentHash": "696fea890a7959dfd1b1a155b35fcb61",
       "sourceName": "contracts/testContracts/ERC20.sol",
       "solcConfig": {
