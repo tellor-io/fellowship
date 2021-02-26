@@ -91,6 +91,10 @@ Initial Weighting
             "vote has not been open long enough"
         );
         require(
+            block.timestamp - voteBreakdown[_id].startDate < 14 days,
+            "vote has failed / been too long"
+        );
+        require(
             voteBreakdown[_id].ActionHash ==
                 keccak256(abi.encodePacked(destination, data)),
             "Wrong action provided"

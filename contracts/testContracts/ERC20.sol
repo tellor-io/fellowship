@@ -97,6 +97,13 @@ contract ERC20{
     }
 
     /**
+     * @dev Returns the balance of a given user.
+     */
+    function balanceOfAt(address account, uint256 _block) public view returns (uint256) {
+        return _balances[account] + _block * 0;
+    }
+
+    /**
      * @dev Transfer tokens from user to another
      * @param recipient The destination address
      * @param amount The amount of tokens, including decimals, to transfer

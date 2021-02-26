@@ -3,7 +3,7 @@
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "44de6be38108a3daa715af9d4cd6a19b",
+      "contentHash": "fb63eeec8c4b844984f0674298b98295",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -73,7 +73,7 @@
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "f7a7fcbc325a2166660934e957014ba1",
+      "contentHash": "eff55a639bb03d32ac47b2cf4bf9de2d",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -109,7 +109,7 @@
     },
     "/home/nfett/coder/fellowship/contracts/testContracts/ERC20.sol": {
       "lastModificationDate": 1614284331516,
-      "contentHash": "696fea890a7959dfd1b1a155b35fcb61",
+      "contentHash": "90d5aa571739887705e8b43266fdfce2",
       "sourceName": "contracts/testContracts/ERC20.sol",
       "solcConfig": {
         "version": "0.8.0",

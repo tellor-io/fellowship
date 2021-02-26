@@ -4,7 +4,7 @@ pragma solidity 0.8.0;
 import "./interfaces/ERC20Interface.sol";
 
 contract Fellowship {
-    enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, WITHDRAWN}
+    enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED, WITHDRAWN}
     struct Walker {
         Status status;
         uint256 date;
@@ -44,28 +44,36 @@ contract Fellowship {
         _;
     }
 
-    constructor(address _tellor) {
+    constructor(address _tellor,address[3] memory _initialWalkers) {
         tellor = _tellor;
+        fellowshipSize = 3;
+        _newWalker(_initialWalkers[0],"Aragorn");
+        _newWalker(_initialWalkers[1],"Legolas");
+        _newWalker(_initialWalkers[2],"Gimli");
+        stakeAmount = 10;
     }
 
-    function newWalker(address _newWalker, string memory _name)
-        external
-        onlyRivendale
-    {
+    function _newWalker(address _walker, string memory _name) internal{
         require(
             fellowship.length < fellowshipSize,
             "Fellowship is already Full"
         );
-        fellowship.push(_newWalker);
-        walkers[_newWalker] = Walker({
+        fellowship.push(_walker);
+        walkers[_walker] = Walker({
             date: block.timestamp,
             name: _name,
-            status: Status.ACTIVE,
+            status: Status.UNFUNDED,
             fellowshipIndex: fellowship.length - 1,
             balance: 0,
             rewardBalance: 0
         });
-        emit NewWalker(_newWalker);
+        emit NewWalker(_walker);
+    }
+    function newWalker(address _walker, string memory _name)
+        external
+        onlyRivendale
+    {
+        _newWalker(_walker, _name);
     }
 
     function banishWalker(address _oldWalker) public {
