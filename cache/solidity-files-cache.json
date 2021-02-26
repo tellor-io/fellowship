@@ -73,7 +73,7 @@
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "766b357493993b5063680aee6877c312",
+      "contentHash": "f7a7fcbc325a2166660934e957014ba1",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
         "version": "0.8.0",

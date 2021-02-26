@@ -59,7 +59,7 @@ contract Rivendale {
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
                 msg.sender,
                 fellowship,
-                1e18
+                1 ether
             )
         );
         //increment vote count
@@ -105,7 +105,7 @@ Initial Weighting
 
     function vote(uint256 _id, bool _supports) external {
         require(!voted[msg.sender][_id], "address has already voted");
-        require(voteBreakdown[_id].startDate > 0, "vote must be started")
+        require(voteBreakdown[_id].startDate > 0, "vote must be started");
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
         //If the sender is a supported Walker (voter)

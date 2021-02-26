@@ -29,20 +29,23 @@ contract("Rivendale Tests", function(accounts) {
     assert(vars[0]*1 + vars[1]*1 + vars[2]*1 == 1000, "the weights should add up to 100%")
   });
   it("Open Vote", async function() {
-    await token.approve(fellowship.address,web3.utils.toWei("1", "ether"));
+    await token.approve(rivendale.address,web3.utils.toWei("1", "ether"),{from:accounts[1]});
     data = await iface.functions.newWalker.encode([accounts[1],"Gandalf"]);
-    await rivendale.openVote(fellowship.address,data)
-    console.log(data)
+    await rivendale.openVote(fellowship.address,data,{from:accounts[1]})
     vars = await rivendale.getVoteInfo(1);
-    voteCount += 1;
-        //set struct variables
-        voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
-        voteBreakdown[voteCount].startDate = block.timestamp;
-        bytes32 actionHash =
-        keccak256(abi.encodePacked(destination, _function));
-        voteBreakdown[voteCount].ActionHash = actionHash;
-    let vars = await rivendale
-    assert(0==1)
+    let voteCount = await rivendale.voteCount.call();
+    assert(voteCount == 1)
+    assert(vars[0][0] == 0)
+    assert(vars[0][1] == 0)
+    assert(vars[0][2] == 0)
+    assert(vars[0][3] == 0)
+    assert(vars[0][4] == 0)
+    assert(vars[0][5] == 0)
+    assert(vars[0][6] == 0)
+    assert(vars[0][7] > 0)
+    assert(vars[0][8] > 0)
+    assert(!vars[1], "vote should not be executed")
+    assert(vars[2] = data, "actionHash should be correct")
   });
   it("Vote / Settle Vote", async function() {
     assert(0==1)
