@@ -31,11 +31,6 @@ contract Fellowship {
     event NewWalkerInformation(address walker, bytes32 input, bytes output);
     event WalkerBanished(address walker);
 
-    modifier onlyWalker {
-        require(isWalker(msg.sender), "Only walkers can call this function.");
-        _;
-    }
-
     modifier onlyRivendale {
         require(
             msg.sender == rivendale || rivendale == address(0),
@@ -50,7 +45,7 @@ contract Fellowship {
         _newWalker(_initialWalkers[0],"Aragorn");
         _newWalker(_initialWalkers[1],"Legolas");
         _newWalker(_initialWalkers[2],"Gimli");
-        stakeAmount = 10;
+        stakeAmount = 10 ether;
     }
 
     function _newWalker(address _walker, string memory _name) internal{
@@ -144,11 +139,15 @@ contract Fellowship {
         rivendale = _newRivendale;
     }
 
-    function depositStake(uint256 _amount) external onlyWalker {
+    function depositStake(uint256 _amount) external {
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         walkers[msg.sender].balance += _amount;
         require(
-            uint256(walkers[msg.sender].status) > 4,
+            walkers[msg.sender].status != Status.INACTIVE,
+            "Walker has wrong status"
+        );
+        require(
+            walkers[msg.sender].status != Status.PENDING_WITHDRAW,
             "Walker has wrong status"
         );
         if (walkers[msg.sender].balance < stakeAmount) {
@@ -172,7 +171,11 @@ contract Fellowship {
     }
 
     //to pay out the reward
-    function recieveReward() external onlyWalker {
+    function recieveReward() external {
+        require(
+            walkers[msg.sender].status != Status.ACTIVE,
+            "Walker has wrong status"
+        );
         ERC20Interface(tellor).transferFrom(
             msg.sender,
             address(this),
@@ -197,12 +200,16 @@ contract Fellowship {
             fellowshipSize; //add a way for decimals if necessary.  Check this!
     }
 
-    function requestStakingWithdraw() external onlyWalker {
+    function requestStakingWithdraw() external{
+                require(
+            walkers[msg.sender].status != Status.ACTIVE,
+            "Walker has wrong status"
+        );
         walkers[msg.sender].status = Status.PENDING_WITHDRAW;
         walkers[msg.sender].date = block.timestamp;
     }
 
-    function withdrawStake() external onlyWalker {
+    function withdrawStake() external{
         require(
             walkers[msg.sender].status == Status.PENDING_WITHDRAW,
             "walker has wrong status"

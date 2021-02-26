@@ -3,7 +3,7 @@
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "fb63eeec8c4b844984f0674298b98295",
+      "contentHash": "23aba14dbdefd7c67771449bae2ed0c6",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -73,7 +73,7 @@
     },
     "/home/nfett/coder/fellowship/contracts/Rivendale.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "eff55a639bb03d32ac47b2cf4bf9de2d",
+      "contentHash": "4f763ebc68fdc7020dd34890c23aad1d",
       "sourceName": "contracts/Rivendale.sol",
       "solcConfig": {
         "version": "0.8.0",

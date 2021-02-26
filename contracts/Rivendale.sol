@@ -123,6 +123,7 @@ Initial Weighting
         }
         //increment payee contribution total by voter's contribution
         voteBreakdown[_id].payeeCount += _fellowship.payments(msg.sender);
+        //should we make this just "balanceOf" to make it ERC20 compliant
         uint256 _bal =
             ERC20Interface(_fellowship.tellor()).balanceOfAt(
                 msg.sender,

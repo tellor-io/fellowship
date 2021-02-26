@@ -20,6 +20,10 @@ contract("Rivendale Tests", function(accounts) {
     fellowship = await Fellowship.new(token.address,[accounts[1],accounts[2],accounts[3]]);
     rivendale = await Rivendale.new(fellowship.address);
     iface = await new ethers.utils.Interface(fellowship.abi);
+    for(i=1;i<4;i++){
+      await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[1]});
+      await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
+  }
   });
   it("check correct weights", async function() {
     let vars = await rivendale.getWeights();
