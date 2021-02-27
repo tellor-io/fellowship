@@ -70,19 +70,20 @@ contract("Rivendale Tests", function(accounts) {
     assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
     assert(vars[0][3] == 3, "walkerTally should be correct")
     assert(vars[0][4] == 0, "payeeTally should be correct")
-    assert(vars[0][5] == 0, "TRBTally should be correct")
-    assert(vars[0][6] == 1000, "tally should be correct")
+    assert(vars[0][5] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBTally should be correct")
+    assert(vars[0][6] == 600, "tally should be correct")
     assert(vars[0][7] > 0, "startDate should be correct")
     assert(vars[0][8] > 0, "startBlock should be correct")
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
     //settle vote
+    helpers.advanceTime(86400*7)
     await rivendale.settleVote(1,fellowship.address,data);
     //check that action ran
     vars = await fellowship.getWalkerDetails(accounts[4])
-    assert(vars[0] > 0)
+    assert(vars[0] > 0, "start date of new walker should be correct")
     assert(vars[1] > 1)
-    assert(vars[2] == "UNFUNDED")
+    assert(vars[2]*1 == 3, "walker status should be correct (unfunded)")
     assert(vars[3] == "Gandalf")
     //check vote closed properly
     vars = await rivendale.getVoteInfo(1);
@@ -91,7 +92,7 @@ contract("Rivendale Tests", function(accounts) {
     assert(vars[0][0] == 3, "walker Count should be correct")
     assert(vars[0][1] == 0, "payeeCount should be correct")
     assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
-    assert(vars[0][3] == 0, "walkerTally should be correct")
+    assert(vars[0][3] == 3, "walkerTally should be correct")
     assert(vars[0][4] == 0, "payeeTally should be correct")
     assert(vars[0][5] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBTally should be correct")
     assert(vars[0][6] == 600, "tally should be correct")
@@ -127,13 +128,12 @@ contract("Rivendale Tests", function(accounts) {
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
     //settle vote
+    helpers.advanceTime(86400*7)
     await rivendale.settleVote(1,fellowship.address,data);
     //check that action ran
     vars = await fellowship.getWalkerDetails(accounts[4])
-    assert(vars[0] > 0)
-    assert(vars[1] > 1)
-    assert(vars[2] == "UNFUNDED")
-    assert(vars[3] == "Gandalf")
+    assert(vars[0] == 0, "walker date should be correct")
+    assert(vars[1] == 0 , "walker should not be added")
     //check vote closed properly
     vars = await rivendale.getVoteInfo(1);
     voteCount = await rivendale.voteCount.call();

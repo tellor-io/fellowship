@@ -41,7 +41,6 @@ contract Fellowship {
 
     constructor(address _tellor,address[3] memory _initialWalkers) {
         tellor = _tellor;
-        fellowshipSize = 3;
         _newWalker(_initialWalkers[0],"Aragorn");
         _newWalker(_initialWalkers[1],"Legolas");
         _newWalker(_initialWalkers[2],"Gimli");
@@ -49,10 +48,7 @@ contract Fellowship {
     }
 
     function _newWalker(address _walker, string memory _name) internal{
-        require(
-            fellowship.length < fellowshipSize,
-            "Fellowship is already Full"
-        );
+        fellowshipSize++;
         fellowship.push(_walker);
         walkers[_walker] = Walker({
             date: block.timestamp,
@@ -80,6 +76,7 @@ contract Fellowship {
             fellowship.length - 1
         ];
         fellowship.pop();
+        fellowshipSize--;
         walkers[_oldWalker].fellowshipIndex = 0;
         emit WalkerBanished(_oldWalker);
     }
