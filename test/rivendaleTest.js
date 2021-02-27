@@ -21,7 +21,7 @@ contract("Rivendale Tests", function(accounts) {
     rivendale = await Rivendale.new(fellowship.address);
     iface = await new ethers.utils.Interface(fellowship.abi);
     for(i=1;i<4;i++){
-      await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[1]});
+      await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[i]});
       await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
   }
   });
@@ -38,16 +38,16 @@ contract("Rivendale Tests", function(accounts) {
     await rivendale.openVote(fellowship.address,data,{from:accounts[1]})
     vars = await rivendale.getVoteInfo(1);
     let voteCount = await rivendale.voteCount.call();
-    assert(voteCount == 1)
-    assert(vars[0][0] == 0)
-    assert(vars[0][1] == 0)
-    assert(vars[0][2] == 0)
-    assert(vars[0][3] == 0)
-    assert(vars[0][4] == 0)
-    assert(vars[0][5] == 0)
-    assert(vars[0][6] == 0)
-    assert(vars[0][7] > 0)
-    assert(vars[0][8] > 0)
+    assert(voteCount == 1, "vote Count should be correct")
+    assert(vars[0][0] == 0, "walker Count should be correct")
+    assert(vars[0][1] == 0, "payeeCount should be correct")
+    assert(vars[0][2] == 0, "TRBCount should be correct")
+    assert(vars[0][3] == 0, "walkerTally should be correct")
+    assert(vars[0][4] == 0, "payeeTally should be correct")
+    assert(vars[0][5] == 0, "TRBTally should be correct")
+    assert(vars[0][6] == 0, "tally should be correct")
+    assert(vars[0][7] > 0, "startDate should be correct")
+    assert(vars[0][8] > 0, "startBlock should be correct")
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
   });
@@ -63,20 +63,21 @@ contract("Rivendale Tests", function(accounts) {
     //check vote data
     vars = await rivendale.getVoteInfo(1);
     let voteCount = await rivendale.voteCount.call();
-    assert(voteCount == 1)
-    assert(vars[0][0] == 0)
-    assert(vars[0][1] == 0)
-    assert(vars[0][2] == 0)
-    assert(vars[0][3] == 0)
-    assert(vars[0][4] == 0)
-    assert(vars[0][5] == 0)
-    assert(vars[0][6] == 0)
-    assert(vars[0][7] > 0)
-    assert(vars[0][8] > 0)
+    TRBCount = 3*(1000-10) - 1; 
+    assert(voteCount == 1, "vote Count should be correct")
+    assert(vars[0][0] == 3, "walker Count should be correct")
+    assert(vars[0][1] == 0, "payeeCount should be correct")
+    assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
+    assert(vars[0][3] == 3, "walkerTally should be correct")
+    assert(vars[0][4] == 0, "payeeTally should be correct")
+    assert(vars[0][5] == 0, "TRBTally should be correct")
+    assert(vars[0][6] == 1000, "tally should be correct")
+    assert(vars[0][7] > 0, "startDate should be correct")
+    assert(vars[0][8] > 0, "startBlock should be correct")
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
     //settle vote
-    await rivendale.settleVote(1);
+    await rivendale.settleVote(1,fellowship.address,data);
     //check that action ran
     vars = await fellowship.getWalkerDetails(accounts[4])
     assert(vars[0] > 0)
@@ -86,16 +87,16 @@ contract("Rivendale Tests", function(accounts) {
     //check vote closed properly
     vars = await rivendale.getVoteInfo(1);
     voteCount = await rivendale.voteCount.call();
-    assert(voteCount == 1)
-    assert(vars[0][0] == 0)
-    assert(vars[0][1] == 0)
-    assert(vars[0][2] == 0)
-    assert(vars[0][3] == 0)
-    assert(vars[0][4] == 0)
-    assert(vars[0][5] == 0)
-    assert(vars[0][6] == 0)
-    assert(vars[0][7] > 0)
-    assert(vars[0][8] > 0)
+    assert(voteCount == 1, "vote Count should be correct")
+    assert(vars[0][0] == 3, "walker Count should be correct")
+    assert(vars[0][1] == 0, "payeeCount should be correct")
+    assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
+    assert(vars[0][3] == 0, "walkerTally should be correct")
+    assert(vars[0][4] == 0, "payeeTally should be correct")
+    assert(vars[0][5] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBTally should be correct")
+    assert(vars[0][6] == 600, "tally should be correct")
+    assert(vars[0][7] > 0, "startDate should be correct")
+    assert(vars[0][8] > 0, "startBlock should be correct")
     assert(vars[1], "vote should be executed")
     assert(vars[2] = data, "actionHash should be correct")
   });
@@ -112,20 +113,21 @@ contract("Rivendale Tests", function(accounts) {
     //check vote data
     vars = await rivendale.getVoteInfo(1);
     let voteCount = await rivendale.voteCount.call();
-    assert(voteCount == 1)
-    assert(vars[0][0] == 0)
-    assert(vars[0][1] == 0)
-    assert(vars[0][2] == 0)
-    assert(vars[0][3] == 0)
-    assert(vars[0][4] == 0)
-    assert(vars[0][5] == 0)
-    assert(vars[0][6] == 0)
-    assert(vars[0][7] > 0)
-    assert(vars[0][8] > 0)
+    TRBCount = 3*(1000-10) - 1;
+    assert(voteCount == 1, "vote Count should be correct")
+    assert(vars[0][0] == 3, "walker Count should be correct")
+    assert(vars[0][1] == 0, "payeeCount should be correct")
+    assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
+    assert(vars[0][3] == 0, "walkerTally should be correct")
+    assert(vars[0][4] == 0, "payeeTally should be correct")
+    assert(vars[0][5] == 0, "TRBTally should be correct")
+    assert(vars[0][6] == 0, "tally should be correct")
+    assert(vars[0][7] > 0, "startDate should be correct")
+    assert(vars[0][8] > 0, "startBlock should be correct")
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
     //settle vote
-    await rivendale.settleVote(1);
+    await rivendale.settleVote(1,fellowship.address,data);
     //check that action ran
     vars = await fellowship.getWalkerDetails(accounts[4])
     assert(vars[0] > 0)
@@ -135,16 +137,16 @@ contract("Rivendale Tests", function(accounts) {
     //check vote closed properly
     vars = await rivendale.getVoteInfo(1);
     voteCount = await rivendale.voteCount.call();
-    assert(voteCount == 1)
-    assert(vars[0][0] == 0)
-    assert(vars[0][1] == 0)
-    assert(vars[0][2] == 0)
-    assert(vars[0][3] == 0)
-    assert(vars[0][4] == 0)
-    assert(vars[0][5] == 0)
-    assert(vars[0][6] == 0)
-    assert(vars[0][7] > 0)
-    assert(vars[0][8] > 0)
+    assert(voteCount == 1, "vote Count should be correct")
+    assert(vars[0][0] == 3, "walker Count should be correct")
+    assert(vars[0][1] == 0, "payeeCount should be correct")
+    assert(vars[0][2] == web3.utils.toWei(TRBCount.toString(),"ether"), "TRBCount should be correct")
+    assert(vars[0][3] == 0, "walkerTally should be correct")
+    assert(vars[0][4] == 0, "payeeTally should be correct")
+    assert(vars[0][5] == 0, "TRBTally should be correct")
+    assert(vars[0][6] == 0, "tally should be correct")
+    assert(vars[0][7] > 0, "startDate should be correct")
+    assert(vars[0][8] > 0, "startBlock should be correct")
     assert(vars[1], "vote should be executed")
     assert(vars[2] = data, "actionHash should be correct")
   });

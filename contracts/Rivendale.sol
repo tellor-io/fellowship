@@ -112,6 +112,7 @@ Initial Weighting
         require(voteBreakdown[_id].startDate > 0, "vote must be started");
         //Inherit Fellowship
         Fellowship _fellowship = Fellowship(fellowship);
+        uint256[3] memory weightedVotes;
         //If the sender is a supported Walker (voter)
         if (_fellowship.isWalker(msg.sender)) {
             //Increment this election's number of voters
@@ -120,6 +121,9 @@ Initial Weighting
             if (_supports) {
                 voteBreakdown[_id].walkerTally++;
             }
+        }
+        if (voteBreakdown[_id].walkerCount > 0){
+            weightedVotes[0] = weights.walkerWeight * (voteBreakdown[_id].walkerTally / voteBreakdown[_id].walkerCount);
         }
         //increment payee contribution total by voter's contribution
         voteBreakdown[_id].payeeCount += _fellowship.payments(msg.sender);
@@ -130,18 +134,20 @@ Initial Weighting
                 voteBreakdown[_id].startBlock
             );
         voteBreakdown[_id].TRBCount += _bal;
+        //what if no walker, payees, or holders vote?  Should it be nil?
         if (_supports) {
             voteBreakdown[_id].payeeTally += _fellowship.payments(msg.sender);
             voteBreakdown[_id].TRBTally += _bal;
         }
+         if (voteBreakdown[_id].payeeCount > 0){
+            weightedVotes[1] = weights.userWeight * (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount);
+        }
+        if (voteBreakdown[_id].TRBCount > 0){
+           weightedVotes[2] = weights.trbWeight * (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
+        }
         //create a way for these to be changed / upgraded?
-        voteBreakdown[_id].tally =
-            weights.userWeight *
-            (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount) +
-            weights.walkerWeight *
-            (voteBreakdown[_id].walkerTally / voteBreakdown[_id].walkerCount) +
-            weights.trbWeight *
-            (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
+        voteBreakdown[_id].tally = weightedVotes[0] + weightedVotes[1] + weightedVotes[2];
+            
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
     }

@@ -150,7 +150,7 @@ contract Fellowship {
             walkers[msg.sender].status != Status.PENDING_WITHDRAW,
             "Walker has wrong status"
         );
-        if (walkers[msg.sender].balance < stakeAmount) {
+        if (walkers[msg.sender].balance >= stakeAmount) {
             walkers[msg.sender].status = Status.ACTIVE;
         }
     }
