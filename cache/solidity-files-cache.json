@@ -3,7 +3,7 @@
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "a4e4f8ee4515ccaa65e850cfa0306def",
+      "contentHash": "a25c6ac8f6179d6c2d88769bf00a0b06",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
         "version": "0.8.0",

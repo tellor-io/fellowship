@@ -33,7 +33,7 @@ contract Fellowship {
 
     modifier onlyRivendale {
         require(
-            msg.sender == rivendale || rivendale == address(0),
+            msg.sender == rivendale,
             "Only rivendale can call this function."
         );
         _;
@@ -64,6 +64,7 @@ contract Fellowship {
         external
         onlyRivendale
     {
+        require(walkers[_walker].date == 0, "cannot already be a walker")
         _newWalker(_walker, _name);
     }
 
@@ -132,7 +133,11 @@ contract Fellowship {
         fellowshipSize = _amount;
     }
 
-    function newRivendale(address _newRivendale) external onlyRivendale {
+    function newRivendale(address _newRivendale) external {
+        require(
+            msg.sender == rivendale || rivendale == address(0),
+            "Only rivendale can call this function."
+        );
         rivendale = _newRivendale;
     }
 

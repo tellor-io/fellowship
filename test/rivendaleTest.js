@@ -24,6 +24,7 @@ contract("Rivendale Tests", function(accounts) {
       await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[i]});
       await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
   }
+  await fellowship.newRivendale(rivendale.address);
   });
   it("check correct weights", async function() {
     let vars = await rivendale.getWeights();
