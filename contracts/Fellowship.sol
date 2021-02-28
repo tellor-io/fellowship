@@ -4,8 +4,8 @@ pragma solidity 0.8.0;
 import "./interfaces/ERC20Interface.sol";
 
 contract Fellowship {
-    enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED, WITHDRAWN}
-    struct Walker {
+    enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED}
+    struct Walker {//make sure all of these are in the getters
         Status status;
         uint256 date;
         uint256 fellowshipIndex;
@@ -18,7 +18,6 @@ contract Fellowship {
     uint256 public rewardPool;
     uint256 public reward;
     uint256 public stakeAmount;
-    uint256 public fellowshipSize;
     address public rivendale;
     address public tellor;
 
@@ -48,7 +47,6 @@ contract Fellowship {
     }
 
     function _newWalker(address _walker, string memory _name) internal{
-        fellowshipSize++;
         fellowship.push(_walker);
         walkers[_walker] = Walker({
             date: block.timestamp,
@@ -64,7 +62,7 @@ contract Fellowship {
         external
         onlyRivendale
     {
-        require(walkers[_walker].date == 0, "cannot already be a walker")
+        require(walkers[_walker].date == 0, "cannot already be a walker");
         _newWalker(_walker, _name);
     }
 
@@ -77,8 +75,8 @@ contract Fellowship {
             fellowship.length - 1
         ];
         fellowship.pop();
-        fellowshipSize--;
         walkers[_oldWalker].fellowshipIndex = 0;
+        walkers[_oldWalker].status = Status.INACTIVE;
         emit WalkerBanished(_oldWalker);
     }
 
@@ -106,6 +104,8 @@ contract Fellowship {
             uint256,
             uint256,
             Status,
+            uint256,
+            uint256,
             string memory
         )
     {
@@ -113,6 +113,8 @@ contract Fellowship {
             walkers[_walker].date,
             walkers[_walker].fellowshipIndex,
             walkers[_walker].status,
+            walkers[_walker].balance,
+            walkers[_walker].rewardBalance,
             walkers[_walker].name
         );
     }
@@ -127,10 +129,15 @@ contract Fellowship {
 
     function setStakeAmount(uint256 _amount) external onlyRivendale {
         stakeAmount = _amount;
+        for(uint256 i = 0;i<fellowship.length;i++){
+            if(walkers[fellowship[i]].balance < stakeAmount){
+                walkers[fellowship[i]].status = Status.UNFUNDED;
+            }
+        }
     }
 
-    function setFellowshipSize(uint256 _amount) external onlyRivendale {
-        fellowshipSize = _amount;
+    function getFellowshipSize() external view returns(uint256) {
+        return fellowship.length;
     }
 
     function newRivendale(address _newRivendale) external {
@@ -152,7 +159,7 @@ contract Fellowship {
             walkers[msg.sender].status != Status.PENDING_WITHDRAW,
             "Walker has wrong status"
         );
-        if (walkers[msg.sender].balance >= stakeAmount) {
+        if (walkers[msg.sender].balance >= stakeAmount){
             walkers[msg.sender].status = Status.ACTIVE;
         }
     }
@@ -164,11 +171,11 @@ contract Fellowship {
     ) external onlyRivendale {
         //slash a custom amount and remove if necessary
         walkers[_walker].balance -= _amount;
-        if (walkers[_walker].balance < stakeAmount) {
-            walkers[_walker].status = Status.INACTIVE;
-        }
         if (_banish) {
             banishWalker(_walker);
+        }
+        else if (walkers[_walker].balance < stakeAmount) {
+            walkers[_walker].status = Status.UNFUNDED;
         }
     }
 
@@ -199,14 +206,15 @@ contract Fellowship {
         rewardPool += _amount;
         reward =
             (((rewardPool * (block.timestamp - lastPayDate)) / 6) * 30 days) /
-            fellowshipSize; //add a way for decimals if necessary.  Check this!
+            fellowship.length; //add a way for decimals if necessary.  Check this!
     }
 
     function requestStakingWithdraw() external{
                 require(
-            walkers[msg.sender].status != Status.ACTIVE,
+            walkers[msg.sender].status != Status.INACTIVE,
             "Walker has wrong status"
         );
+
         walkers[msg.sender].status = Status.PENDING_WITHDRAW;
         walkers[msg.sender].date = block.timestamp;
     }
@@ -224,7 +232,6 @@ contract Fellowship {
             msg.sender,
             walkers[msg.sender].balance
         );
-        walkers[msg.sender].status = Status.WITHDRAWN;
         walkers[msg.sender].balance = 0;
         banishWalker(msg.sender);
     }

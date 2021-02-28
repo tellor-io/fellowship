@@ -85,7 +85,9 @@ contract("Rivendale Tests", function(accounts) {
     assert(vars[0] > 0, "start date of new walker should be correct")
     assert(vars[1] > 1)
     assert(vars[2]*1 == 3, "walker status should be correct (unfunded)")
-    assert(vars[3] == "Gandalf")
+    assert(vars[3] == 0, "walker balance should be correct")
+    assert(vars[4] == 0, "walker reward balance should be correct")
+    assert(vars[5] == "Gandalf")
     //check vote closed properly
     vars = await rivendale.getVoteInfo(1);
     voteCount = await rivendale.voteCount.call();
