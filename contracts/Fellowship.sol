@@ -16,7 +16,6 @@ contract Fellowship {
 
     uint256 public lastPayDate;
     uint256 public rewardPool;
-    uint256 public reward;
     uint256 public stakeAmount;
     address public rivendale;
     address public tellor;
@@ -26,9 +25,14 @@ contract Fellowship {
     mapping(address => uint256) public payments;
     address[] public fellowship;
 
+    //check events are used properly
     event NewWalker(address walker);
     event NewWalkerInformation(address walker, bytes32 input, bytes output);
     event WalkerBanished(address walker);
+    event StakeWithdrawalRequestStarted(address walker);
+    event StakeWithdrawn(address walker);
+    event PaymentDeposited(address payee, uint256 amount);
+    event RewardsPaid(uint256 _rewardPerWalker);
 
     modifier onlyRivendale {
         require(
@@ -192,21 +196,37 @@ contract Fellowship {
         );
     }
 
-    function calculatereward() external {
+    function payReward() public {
+        uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
+        if(timeSinceLastPayment > 6 * 30 days){
+            timeSinceLastPayment = 6 * 30 days;
+        }
+        uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; //use dsMath
         for (uint256 i = 0; i < fellowship.length; i++) {
             walkers[fellowship[i]].rewardBalance += reward;
         }
         rewardPool -= reward * fellowship.length;
+        lastPayDate = block.timestamp;
     }
 
+    function checkReward() external view returns(uint256) {
+        uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
+        if(timeSinceLastPayment > 6 * 30 days){
+            timeSinceLastPayment = 6 * 30 days;
+        }
+        return (rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length);
+    }
     //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
     function depositPayment(uint256 _amount) external {
+        if(rewardPool > 0){
+            payReward();
+        }
+        else{
+            lastPayDate = block.timestamp;
+        }
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         payments[msg.sender] += _amount;
         rewardPool += _amount;
-        reward =
-            (((rewardPool * (block.timestamp - lastPayDate)) / 6) * 30 days) /
-            fellowship.length; //add a way for decimals if necessary.  Check this!
     }
 
     function requestStakingWithdraw() external{

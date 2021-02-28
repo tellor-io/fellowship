@@ -95,13 +95,13 @@ contract("Fellowship Tests", function(accounts) {
     await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[1]})
     await token.approve(fellowship.address,web3.utils.toWei("100", "ether"),{from:accounts[2]});
     await fellowship.depositStake(web3.utils.toWei("100","ether"),{from:accounts[2]})
-    await fellowship.slashhWalker(accounts[1],web3.utils.toWei("5","ether"),true)
+    await fellowship.slashWalker(accounts[1],web3.utils.toWei("5","ether"),true)
     vars = await fellowship.getWalkerDetails(accounts[1])
     assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
     assert(vars[3] == web3.utils.toWei("5","ether"), "walker balance should be correct")
     vars = await fellowship.getFellowshipSize();
     assert(vars == 2, "fellowship should be the correct size")
-    await fellowship.slashhWalker(accounts[2],web3.utils.toWei("3","ether"),false)
+    await fellowship.slashWalker(accounts[2],web3.utils.toWei("3","ether"),false)
     vars = await fellowship.getWalkerDetails(accounts[2])
     assert(vars[2]*1 == 3, "walker status should be correct (unfunded)")
     assert(vars[3] == web3.utils.toWei("7","ether"), "walker balance should be correct")
@@ -110,13 +110,42 @@ contract("Fellowship Tests", function(accounts) {
   });  
 
   it("Test Deposit Payment / Recieve Reward", async function() {
-    assert(0==1)
+      let initBal =[]
+    for(i=1;i<4;i++){
+        initBal[i] = await token.balanceOf(accounts[i])
+        await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[i]});
+        await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
+    }
+    await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[5]});
+    await fellowship.depositPayment(web3.utils.toWei("10","ether"),{from:accounts[5]})
+    assert(fellowship.rewardPool.call() == web3.utils.toWei("10","ether"), "Reward Pool should be correct")
+    helpers.advanceTime(86400*30)
+    let reward = web3.utils.toWei("10","ether")/ 6 / 3;
+    assert(await fellowship.checkReward() == reward, "reward calculation should be correct")
+    await fellowship.payReward()
+    for(i=1;i<4;i++){
+        vars = await fellowship.getWalkerDetails(accounts[i])
+        assert(vars[i] == 0, "walker reward balance should be correct")
+        await fellowship.recieveReward({from:accounts[i]})
+        assert(await token.balanceOf(accounts[i]) == initBal[i] + reward)
+    }
   });  
 
-  it("Test calculate reward", async function() {
-    assert(0==1)
-  });  
   it("Test Staking Withdraw / Request", async function() {
-    assert(0==1)
+    for(i=1;i<4;i++){
+        await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[i]});
+        await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
+    }
+    for(i=1;i<4;i++){
+        await fellowship.requestStakingWithdraw({from:accounts[i]})
+        vars = await fellowship.getWalkerDetails(accounts[i])
+        assert(vars[2]*1 == 2, "walker status should be correct (Pending Withdraw)")
+    }
+    helpers.advanceTime(86400*14)
+    for(i=1;i<4;i++){
+        await fellowship.withdrawStake()({from:accounts[i]})
+        vars = await fellowship.getWalkerDetails(accounts[i])
+        assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
+    }
   });  
 });
