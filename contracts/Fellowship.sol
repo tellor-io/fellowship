@@ -169,14 +169,14 @@ contract Fellowship {
     //to pay out the reward
     function recieveReward() external {
         require(
-            walkers[msg.sender].status != Status.ACTIVE,
+            walkers[msg.sender].status == Status.ACTIVE,
             "Walker has wrong status"
         );
-        ERC20Interface(tellor).transferFrom(
+        ERC20Interface(tellor).transfer(
             msg.sender,
-            address(this),
             walkers[msg.sender].rewardBalance
         );
+        walkers[msg.sender].rewardBalance = 0;
     }
 
     function payReward() public {

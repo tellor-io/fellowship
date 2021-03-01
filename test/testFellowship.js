@@ -120,15 +120,17 @@ contract("Fellowship Tests", function(accounts) {
     await fellowship.depositPayment(web3.utils.toWei("10","ether"),{from:accounts[5]})
     assert(await fellowship.rewardPool.call() == web3.utils.toWei("10","ether"), "Reward Pool should be correct")
     await helpers.advanceTime(86400*30)
+    await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[4]});//run to increase time
     let reward = web3.utils.toWei("10","ether")/ 6 / 3;
     console.log(reward, await fellowship.checkReward())
     assert(await fellowship.checkReward() == reward, "reward calculation should be correct")
     await fellowship.payReward()
     for(i=1;i<4;i++){
+        console.log(i)
         vars = await fellowship.getWalkerDetails(accounts[i])
         assert(vars[i] == 0, "walker reward balance should be correct")
         await fellowship.recieveReward({from:accounts[i]})
-        assert(await token.balanceOf(accounts[i]) == initBal[i] + reward)
+        assert(await token.balanceOf(accounts[i]) == initBal[i] + reward,"balance should be paid")
     }
   });  
 
