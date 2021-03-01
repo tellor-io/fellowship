@@ -70,17 +70,16 @@ contract Fellowship {
         _newWalker(_walker, _name);
     }
 
-    function banishWalker(address _oldWalker) public {
-        require(
-            msg.sender == address(this) || msg.sender == rivendale,
-            "Walker cannot be banished"
-        );
+    function _banishWalker(address _oldWalker) internal {
         fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[
-            fellowship.length - 1
+        fellowship.length - 1
         ];
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
         walkers[_oldWalker].status = Status.INACTIVE;
+    }
+    function banishWalker(address _oldWalker) external onlyRivendale {
+        _banishWalker(_oldWalker);
         emit WalkerBanished(_oldWalker);
     }
 
@@ -101,10 +100,7 @@ contract Fellowship {
     }
 
     //be sure to add all walker details in here
-    function getWalkerDetails(address _walker)
-        external
-        view
-        returns (
+    function getWalkerDetails(address _walker) external view returns(
             uint256,
             uint256,
             Status,
@@ -176,7 +172,7 @@ contract Fellowship {
         //slash a custom amount and remove if necessary
         walkers[_walker].balance -= _amount;
         if (_banish) {
-            banishWalker(_walker);
+            _banishWalker(_walker);
         }
         else if (walkers[_walker].balance < stakeAmount) {
             walkers[_walker].status = Status.UNFUNDED;
@@ -207,6 +203,7 @@ contract Fellowship {
         }
         rewardPool -= reward * fellowship.length;
         lastPayDate = block.timestamp;
+        emit  RewardsPaid(reward);
     }
 
     function checkReward() external view returns(uint256) {
@@ -227,16 +224,17 @@ contract Fellowship {
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         payments[msg.sender] += _amount;
         rewardPool += _amount;
+        emit PaymentDeposited(msg.sender,_amount);
     }
 
     function requestStakingWithdraw() external{
-                require(
+        require(
             walkers[msg.sender].status != Status.INACTIVE,
             "Walker has wrong status"
         );
-
         walkers[msg.sender].status = Status.PENDING_WITHDRAW;
         walkers[msg.sender].date = block.timestamp;
+        emit StakeWithdrawalRequestStarted(msg.sender);
     }
 
     function withdrawStake() external{
@@ -253,6 +251,7 @@ contract Fellowship {
             walkers[msg.sender].balance
         );
         walkers[msg.sender].balance = 0;
-        banishWalker(msg.sender);
+        _banishWalker(msg.sender);
+        emit StakeWithdrawn(msg.sender);
     }
 }

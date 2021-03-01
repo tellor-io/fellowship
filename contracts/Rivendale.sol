@@ -79,8 +79,6 @@ Initial Weighting
     40% - Customers
     20% - TRB Holders
 */
-    //does this work? We need to make sure if it reverts we have a way to close out vote? (or do we?)
-    //it should be able to run arbitrary functions that we vote on
     function settleVote(
         uint256 _id,
         address destination,
@@ -147,7 +145,6 @@ Initial Weighting
         }
         //create a way for these to be changed / upgraded?
         voteBreakdown[_id].tally = weightedVotes[0] + weightedVotes[1] + weightedVotes[2];
-            
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
     }

@@ -14,7 +14,7 @@ contract("Fellowship Tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     token = await ERC20.new("Test","TEST");
-    for(i=0;i<5;i++){
+    for(i=0;i<=5;i++){
         await token.faucet(accounts[i],{from:accounts[i]})
     }
     fellowship = await Fellowship.new(token.address,[accounts[1],accounts[2],accounts[3]]);
@@ -143,7 +143,7 @@ contract("Fellowship Tests", function(accounts) {
     }
     helpers.advanceTime(86400*14)
     for(i=1;i<4;i++){
-        await fellowship.withdrawStake()({from:accounts[i]})
+        await fellowship.withdrawStake({from:accounts[i]})
         vars = await fellowship.getWalkerDetails(accounts[i])
         assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
     }
