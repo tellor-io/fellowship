@@ -2,7 +2,6 @@
 pragma solidity 0.8.0;
 
 import "./interfaces/ERC20Interface.sol";
-import "hardhat/console.sol";
 
 /****
 
@@ -17,7 +16,7 @@ import "hardhat/console.sol";
 
 contract Fellowship {
     enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED}
-    struct Walker {//make sure all of these are in the getters
+    struct Walker {
         Status status;
         uint256 date;
         uint256 fellowshipIndex;
@@ -37,7 +36,6 @@ contract Fellowship {
     mapping(address => uint256) public payments;
     address[] public fellowship;
 
-    //check events are used properly
     event NewWalker(address walker);
     event NewWalkerInformation(address walker, bytes32 input, bytes output);
     event WalkerBanished(address walker);
@@ -91,7 +89,6 @@ contract Fellowship {
         return false;
     }
 
-    //be sure to add all walker details in here
     function getWalkerDetails(address _walker) external view returns(
             uint256,
             uint256,
@@ -184,7 +181,7 @@ contract Fellowship {
         if(timeSinceLastPayment > 6 * 30 days){
             timeSinceLastPayment = 6 * 30 days;
         }
-        uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; //use dsMath
+        uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; 
         for (uint256 i = 0; i < fellowship.length; i++) {
             walkers[fellowship[i]].rewardBalance += reward;
         }
@@ -195,14 +192,12 @@ contract Fellowship {
 
     function checkReward() external view returns(uint256) {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
-        console.log(lastPayDate);
-        console.log(timeSinceLastPayment);
         if(timeSinceLastPayment > 6 * 30 days){
             timeSinceLastPayment = 6 * 30 days;
         }
         return (rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length);
     }
-    //should we keep track of current payments? or weight them by date?  Should really old payments go towards current votes?
+
     function depositPayment(uint256 _amount) external {
         if(rewardPool > 0){
             payReward();

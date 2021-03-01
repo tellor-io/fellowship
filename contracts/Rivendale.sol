@@ -132,7 +132,6 @@ Initial Weighting
                 voteBreakdown[_id].startBlock
             );
         voteBreakdown[_id].TRBCount += _bal;
-        //what if no walker, payees, or holders vote?  Should it be nil?
         if (_supports) {
             voteBreakdown[_id].payeeTally += _fellowship.payments(msg.sender);
             voteBreakdown[_id].TRBTally += _bal;
@@ -143,7 +142,6 @@ Initial Weighting
         if (voteBreakdown[_id].TRBCount > 0){
            weightedVotes[2] = weights.trbWeight * (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
         }
-        //create a way for these to be changed / upgraded?
         voteBreakdown[_id].tally = weightedVotes[0] + weightedVotes[1] + weightedVotes[2];
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);

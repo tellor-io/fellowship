@@ -112,9 +112,9 @@ contract("Fellowship Tests", function(accounts) {
   it("Test Deposit Payment / Recieve Reward", async function() {
       let initBal =[]
     for(i=1;i<4;i++){
-        initBal[i] = await token.balanceOf(accounts[i])
         await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[i]});
         await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[i]})
+        initBal[i] = await token.balanceOf(accounts[i])
     }
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[5]});
     await fellowship.depositPayment(web3.utils.toWei("10","ether"),{from:accounts[5]})
@@ -122,16 +122,17 @@ contract("Fellowship Tests", function(accounts) {
     await helpers.advanceTime(86400*30)
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[4]});//run to increase time
     let reward = web3.utils.toWei("10","ether")/ 6 / 3;
-    console.log(reward, await fellowship.checkReward())
     assert(await fellowship.checkReward() == reward, "reward calculation should be correct")
     await fellowship.payReward()
     for(i=1;i<4;i++){
-        console.log(i)
         vars = await fellowship.getWalkerDetails(accounts[i])
-        assert(vars[i] == 0, "walker reward balance should be correct")
+        assert(vars[4]*1 >0, "walker reward balance should be correct")
         await fellowship.recieveReward({from:accounts[i]})
-        assert(await token.balanceOf(accounts[i]) == initBal[i] + reward,"balance should be paid")
-    }
+        let x = initBal[i]*1 + reward
+        assert(Math.abs(web3.utils.fromWei(await token.balanceOf(accounts[i])) - web3.utils.fromWei(x.toString())) < .001,"balance should be paid")
+        vars = await fellowship.getWalkerDetails(accounts[i])
+        assert(vars[4]*1 == 0, "walker reward balance should be correct")
+     }
   });  
 
   it("Test Staking Withdraw / Request", async function() {
@@ -146,7 +147,6 @@ contract("Fellowship Tests", function(accounts) {
     }
     helpers.advanceTime(86400*15)
     for(i=1;i<4;i++){
-        console.log(i)
         await fellowship.withdrawStake({from:accounts[i]})
         vars = await fellowship.getWalkerDetails(accounts[i])
         assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
