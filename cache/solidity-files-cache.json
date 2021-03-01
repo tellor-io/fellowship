@@ -3,7 +3,7 @@
   "files": {
     "/home/nfett/coder/fellowship/contracts/Fellowship.sol": {
       "lastModificationDate": 1614284331515,
-      "contentHash": "d5a2d1efac9a41c2326cfce92cd2bfcc",
+      "contentHash": "6eb1742ee8560d2c358e873255d4c83d",
       "sourceName": "contracts/Fellowship.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -28,7 +28,8 @@
         }
       },
       "imports": [
-        "./interfaces/ERC20Interface.sol"
+        "./interfaces/ERC20Interface.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "0.8.0"
@@ -140,6 +141,40 @@
       "artifacts": [
         "ERC20",
         "SafeMath"
+      ]
+    },
+    "/home/nfett/coder/fellowship/node_modules/hardhat/console.sol": {
+      "lastModificationDate": 1614284333047,
+      "contentHash": "11a7d05c4b3b94f6532f3e2d6ddd6f30",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <=0.8.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }

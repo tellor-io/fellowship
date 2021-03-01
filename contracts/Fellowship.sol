@@ -2,6 +2,7 @@
 pragma solidity 0.8.0;
 
 import "./interfaces/ERC20Interface.sol";
+import "hardhat/console.sol";
 
 /****
 
@@ -61,31 +62,12 @@ contract Fellowship {
         stakeAmount = 10 ether;
     }
 
-    function _newWalker(address _walker, string memory _name) internal{
-        fellowship.push(_walker);
-        walkers[_walker] = Walker({
-            date: block.timestamp,
-            name: _name,
-            status: Status.UNFUNDED,
-            fellowshipIndex: fellowship.length - 1,
-            balance: 0,
-            rewardBalance: 0
-        });
-        emit NewWalker(_walker);
-    }
     function newWalker(address _walker, string memory _name)
         external
         onlyRivendale
     {
         require(walkers[_walker].date == 0, "cannot already be a walker");
         _newWalker(_walker, _name);
-    }
-
-    function _banishWalker(address _oldWalker) internal {
-        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
-        fellowship.pop();
-        walkers[_oldWalker].fellowshipIndex = 0;
-        walkers[_oldWalker].status = Status.INACTIVE;
     }
 
     function banishWalker(address _oldWalker) external onlyRivendale {
@@ -174,12 +156,7 @@ contract Fellowship {
         }
     }
 
-    function slashWalker(
-        address _walker,
-        uint256 _amount,
-        bool _banish
-    ) external onlyRivendale {
-        //slash a custom amount and remove if necessary
+    function slashWalker(address _walker,uint256 _amount,bool _banish) external onlyRivendale {
         walkers[_walker].balance -= _amount;
         if (_banish) {
             _banishWalker(_walker);
@@ -218,6 +195,8 @@ contract Fellowship {
 
     function checkReward() external view returns(uint256) {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
+        console.log(lastPayDate);
+        console.log(timeSinceLastPayment);
         if(timeSinceLastPayment > 6 * 30 days){
             timeSinceLastPayment = 6 * 30 days;
         }
@@ -263,5 +242,26 @@ contract Fellowship {
         walkers[msg.sender].balance = 0;
         _banishWalker(msg.sender);
         emit StakeWithdrawn(msg.sender);
+    }
+
+    function _banishWalker(address _oldWalker) internal {
+        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
+        walkers[fellowship[fellowship.length - 1]].fellowshipIndex = walkers[_oldWalker].fellowshipIndex;
+        fellowship.pop();
+        walkers[_oldWalker].fellowshipIndex = 0;
+        walkers[_oldWalker].status = Status.INACTIVE;
+    }
+
+    function _newWalker(address _walker, string memory _name) internal{
+        fellowship.push(_walker);
+        walkers[_walker] = Walker({
+            date: block.timestamp,
+            name: _name,
+            status: Status.UNFUNDED,
+            fellowshipIndex: fellowship.length - 1,
+            balance: 0,
+            rewardBalance: 0
+        });
+        emit NewWalker(_walker);
     }
 }
