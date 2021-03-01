@@ -93,8 +93,8 @@ contract("Fellowship Tests", function(accounts) {
   it("Test Slash Walker", async function() {
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[1]});
     await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[1]})
-    await token.approve(fellowship.address,web3.utils.toWei("100", "ether"),{from:accounts[2]});
-    await fellowship.depositStake(web3.utils.toWei("100","ether"),{from:accounts[2]})
+    await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[2]});
+    await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[2]})
     await fellowship.slashWalker(accounts[1],web3.utils.toWei("5","ether"),true)
     vars = await fellowship.getWalkerDetails(accounts[1])
     assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
@@ -118,9 +118,10 @@ contract("Fellowship Tests", function(accounts) {
     }
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[5]});
     await fellowship.depositPayment(web3.utils.toWei("10","ether"),{from:accounts[5]})
-    assert(fellowship.rewardPool.call() == web3.utils.toWei("10","ether"), "Reward Pool should be correct")
+    assert(await fellowship.rewardPool.call() == web3.utils.toWei("10","ether"), "Reward Pool should be correct")
     helpers.advanceTime(86400*30)
     let reward = web3.utils.toWei("10","ether")/ 6 / 3;
+    console.log(reward, await fellowship.checkReward())
     assert(await fellowship.checkReward() == reward, "reward calculation should be correct")
     await fellowship.payReward()
     for(i=1;i<4;i++){

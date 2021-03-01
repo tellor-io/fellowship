@@ -3,6 +3,17 @@ pragma solidity 0.8.0;
 
 import "./interfaces/ERC20Interface.sol";
 
+/****
+
+████████╗██╗░░██╗███████╗  ███████╗███████╗██╗░░░░░██╗░░░░░░█████╗░░██╗░░░░░░░██╗░██████╗██╗░░██╗██╗██████╗░
+╚══██╔══╝██║░░██║██╔════╝  ██╔════╝██╔════╝██║░░░░░██║░░░░░██╔══██╗░██║░░██╗░░██║██╔════╝██║░░██║██║██╔══██╗
+░░░██║░░░███████║█████╗░░  █████╗░░█████╗░░██║░░░░░██║░░░░░██║░░██║░╚██╗████╗██╔╝╚█████╗░███████║██║██████╔╝
+░░░██║░░░██╔══██║██╔══╝░░  ██╔══╝░░██╔══╝░░██║░░░░░██║░░░░░██║░░██║░░████╔═████║░░╚═══██╗██╔══██║██║██╔═══╝░
+░░░██║░░░██║░░██║███████╗  ██║░░░░░███████╗███████╗███████╗╚█████╔╝░░╚██╔╝░╚██╔╝░██████╔╝██║░░██║██║██║░░░░░
+░░░╚═╝░░░╚═╝░░╚═╝╚══════╝  ╚═╝░░░░░╚══════╝╚══════╝╚══════╝░╚════╝░░░░╚═╝░░░╚═╝░░╚═════╝░╚═╝░░╚═╝╚═╝╚═╝░░░░░
+
+*****/
+
 contract Fellowship {
     enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED}
     struct Walker {//make sure all of these are in the getters
@@ -71,13 +82,12 @@ contract Fellowship {
     }
 
     function _banishWalker(address _oldWalker) internal {
-        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[
-        fellowship.length - 1
-        ];
+        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
         walkers[_oldWalker].status = Status.INACTIVE;
     }
+
     function banishWalker(address _oldWalker) external onlyRivendale {
         _banishWalker(_oldWalker);
         emit WalkerBanished(_oldWalker);
