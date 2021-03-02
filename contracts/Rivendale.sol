@@ -3,38 +3,55 @@ pragma solidity 0.8.0;
 
 import "./Fellowship.sol";
 
+/** 
+ @author Tellor Inc.
+ @title Rivendale
+ @dev This contract holds the voting logic to be used in the Fellowship contract
+**/
 contract Rivendale {
+    //Storage
     struct Vote {
-        uint256 walkerCount;
-        uint256 payeeCount;
-        uint256 TRBCount;
-        uint256 walkerTally; //Number of yes votes
-        uint256 payeeTally;
-        uint256 TRBTally;
-        uint256 tally;
-        uint256 startDate;
-        uint256 startBlock;
-        bool executed;
-        bytes32 ActionHash;
+        uint256 walkerCount;//Number of total votes by walkers
+        uint256 payeeCount;//Number of total votes by payees
+        uint256 TRBCount;//Number of total votes by TRB holders
+        uint256 walkerTally; //Number of yes votes by walkers
+        uint256 payeeTally;//token weighted tally of yes votes by payees
+        uint256 TRBTally;//token weighted tally of yes votes by TRB holders
+        uint256 tally;//total weighted tally (/1000) of the vote
+        uint256 startDate;//startDate of the vote
+        uint256 startBlock;//startingblock of the vote
+        bool executed;//bool whether the vote has been settled and action ran
+        bytes32 ActionHash;//hash of the action to run upon successful vote
     }
 
+    /*
+        Initial Weighting
+        40% - Walker Vote
+        40% - Customers
+        20% - TRB Holders
+    */
     struct Weightings {
-        uint256 trbWeight;
-        uint256 walkerWeight;
-        uint256 userWeight;
+        uint256 trbWeight;//weight of TRB holders
+        uint256 walkerWeight;//weight of Walkers
+        uint256 userWeight;//weight of payees (users)
     }
 
     Weightings weights;
-
     mapping(address => mapping(uint256 => bool)) voted;
     mapping(uint256 => Vote) voteBreakdown;
     uint256 public voteCount;
     address fellowship;
 
-    event NewVote(uint256 _voteID, address destination, bytes _data);
-    event Voted(uint256 _tally, address _user);
-    event VoteSettled(uint256 _voteID, bool _passed);
+    //Events
+    event NewVote(uint256 voteID, address destination, bytes data);
+    event Voted(uint256 tally, address user);
+    event VoteSettled(uint256 voteID, bool passed);
 
+    //Functions
+    /**
+     * @dev Constructor for setting initial variables
+     * @param _fellowship the address of the fellowshipContract
+     */
     constructor(address _fellowship) {
         fellowship = _fellowship;
         setWeights(200, 400, 400); //should we have a way to change these?
@@ -73,12 +90,7 @@ contract Rivendale {
         emit NewVote(voteCount, destination, _function);
     }
 
-    /*
-Initial Weighting
-    40% - Walker Vote
-    40% - Customers
-    20% - TRB Holders
-*/
+
     function settleVote(
         uint256 _id,
         address destination,

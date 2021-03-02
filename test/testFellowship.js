@@ -93,12 +93,14 @@ contract("Fellowship Tests", function(accounts) {
   it("Test Slash Walker", async function() {
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[1]});
     await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[1]})
+    let initBal= await token.balanceOf(accounts[1])
     await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[2]});
     await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[2]})
     await fellowship.slashWalker(accounts[1],web3.utils.toWei("5","ether"),true)
     vars = await fellowship.getWalkerDetails(accounts[1])
     assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
-    assert(vars[3] == web3.utils.toWei("5","ether"), "walker balance should be correct")
+    assert(vars[3] == 0, "walker balance should be correct")
+    assert(initBal*1 + web3.utils.toWei("5","ether")*1 -(await token.balanceOf(accounts[1]))*1 < .001, "walker trb balance should be correct")
     vars = await fellowship.getFellowshipSize();
     assert(vars == 2, "fellowship should be the correct size")
     await fellowship.slashWalker(accounts[2],web3.utils.toWei("3","ether"),false)
