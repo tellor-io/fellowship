@@ -21,28 +21,29 @@ import "./interfaces/ERC20Interface.sol";
 **/
 contract Fellowship {
     //Storage
+    // I can't see a attack right now, but we should make the 0 index the Inactive just in case.
     enum Status {ACTIVE, INACTIVE, PENDING_WITHDRAW, UNFUNDED}
 
     struct Walker {
-        Status status;//status of walker
-        uint256 date;//date the walker initally was chosen
-        uint256 fellowshipIndex;//index of walker in the fellowship array
-        uint256 balance;//TRB balance of walker (must be > stakeAmount to be ACTIVE)
-        uint256 rewardBalance;//balance of rewards they own
-        string name;//name of walker
+        Status status; //status of walker
+        uint256 date; //date the walker initally was chosen
+        uint256 fellowshipIndex; //index of walker in the fellowship array
+        uint256 balance; //TRB balance of walker (must be > stakeAmount to be ACTIVE)
+        uint256 rewardBalance; //balance of rewards they own
+        string name; //name of walker
     }
 
-    uint256 public lastPayDate;//most recent date walkers were paid
-    uint256 public rewardPool;//sum of all payments for services in contract
-    uint256 public stakeAmount;//minimum amount each walker needs to stake
-    address public rivendale;//the address of the voting contract
-    address public tellor;//address of tellor (the token for staking and payments)
+    uint256 public lastPayDate; //most recent date walkers were paid
+    uint256 public rewardPool; //sum of all payments for services in contract
+    uint256 public stakeAmount; //minimum amount each walker needs to stake
+    address public rivendale; //the address of the voting contract
+    address public tellor; //address of tellor (the token for staking and payments)
 
-    mapping(address => mapping(bytes32 => bytes)) information;//allows parties to store arbitrary information
-    mapping(address => Walker) public walkers;//a mapping of an address to their information as a Walker
-    mapping(address => uint256) public payments;//a mapping of an address to the payment amount they've given
+    mapping(address => mapping(bytes32 => bytes)) information; //allows parties to store arbitrary information
+    mapping(address => Walker) public walkers; //a mapping of an address to their information as a Walker
+    mapping(address => uint256) public payments; //a mapping of an address to the payment amount they've given
     //The Fellowship:
-    address[] public fellowship;//The array of chosen individuals who are part of the fellowship
+    address[] public fellowship; //The array of chosen individuals who are part of the fellowship
 
     //Events
     event NewWalker(address walker);
@@ -71,34 +72,33 @@ contract Fellowship {
      * @param _tellor the address of the tellor contract
      * @param _initialWalkers an array of three addresses to serve as the initial walkers
      */
-    constructor(address _tellor,address[3] memory _initialWalkers) {
+    constructor(address _tellor, address[3] memory _initialWalkers) {
         tellor = _tellor;
-        _newWalker(_initialWalkers[0],"Aragorn");
-        _newWalker(_initialWalkers[1],"Legolas");
-        _newWalker(_initialWalkers[2],"Gimli");
+        _newWalker(_initialWalkers[0], "Aragorn");
+        _newWalker(_initialWalkers[1], "Legolas");
+        _newWalker(_initialWalkers[2], "Gimli");
         stakeAmount = 10 ether;
     }
 
     /**
      * @dev Function to banish a walker
      * @param _oldWalker address of walker to be banished (removed from Fellowship)
-    **/
+     **/
     function banishWalker(address _oldWalker) external onlyRivendale {
         _banishWalker(_oldWalker);
         emit WalkerBanished(_oldWalker);
     }
 
     function depositPayment(uint256 _amount) external {
-        if(rewardPool > 0){
+        if (rewardPool > 0) {
             payReward();
-        }
-        else{
+        } else {
             lastPayDate = block.timestamp;
         }
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         payments[msg.sender] += _amount;
         rewardPool += _amount;
-        emit PaymentDeposited(msg.sender,_amount);
+        emit PaymentDeposited(msg.sender, _amount);
     }
 
     function depositStake(uint256 _amount) external {
@@ -112,7 +112,7 @@ contract Fellowship {
             walkers[msg.sender].status != Status.PENDING_WITHDRAW,
             "Walker has wrong status"
         );
-        if (walkers[msg.sender].balance >= stakeAmount){
+        if (walkers[msg.sender].balance >= stakeAmount) {
             walkers[msg.sender].status = Status.ACTIVE;
         }
     }
@@ -135,27 +135,31 @@ contract Fellowship {
 
     function payReward() public {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
-        if(timeSinceLastPayment > 6 * 30 days){
+        if (timeSinceLastPayment > 6 * 30 days) {
             timeSinceLastPayment = 6 * 30 days;
         }
-        uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; 
+        uint256 reward =
+            (rewardPool * timeSinceLastPayment) /
+                6 /
+                30 days /
+                fellowship.length;
         for (uint256 i = 0; i < fellowship.length; i++) {
-            if(walkers[fellowship[i]].status == Status.ACTIVE){
+            if (walkers[fellowship[i]].status == Status.ACTIVE) {
                 walkers[fellowship[i]].rewardBalance += reward;
                 rewardPool -= reward;
-            }  
+            }
         }
         lastPayDate = block.timestamp;
-        emit  RewardsPaid(reward);
+        emit RewardsPaid(reward);
     }
 
-
-    //to pay out the reward
+    //withdraw is probably a better name
     function recieveReward() external {
         require(
             walkers[msg.sender].status == Status.ACTIVE,
             "Walker has wrong status"
         );
+        //
         ERC20Interface(tellor).transfer(
             msg.sender,
             walkers[msg.sender].rewardBalance
@@ -163,8 +167,7 @@ contract Fellowship {
         walkers[msg.sender].rewardBalance = 0;
     }
 
-
-    function requestStakingWithdraw() external{
+    function requestStakingWithdraw() external {
         require(
             walkers[msg.sender].status != Status.INACTIVE,
             "Walker has wrong status"
@@ -176,8 +179,9 @@ contract Fellowship {
 
     function setStakeAmount(uint256 _amount) external onlyRivendale {
         stakeAmount = _amount;
-        for(uint256 i = 0;i<fellowship.length;i++){
-            if(walkers[fellowship[i]].balance < stakeAmount){
+        // Should we also automatically set unfunded members as active? Or this should be a more "active" action?
+        for (uint256 i = 0; i < fellowship.length; i++) {
+            if (walkers[fellowship[i]].balance < stakeAmount) {
                 walkers[fellowship[i]].status = Status.UNFUNDED;
             }
         }
@@ -191,18 +195,24 @@ contract Fellowship {
         emit NewWalkerInformation(msg.sender, _input, _output);
     }
 
-    function slashWalker(address _walker,uint256 _amount,bool _banish) external onlyRivendale {
+    // I guess we need to have a minimun amount of walkers. Otherwise current walkers could colude to progressively diminish the nuber of members until a small group is in full control
+
+    // But also, having a floor of members might lock members in, making them unable to exit.
+    function slashWalker(
+        address _walker,
+        uint256 _amount,
+        bool _banish
+    ) external onlyRivendale {
         walkers[_walker].balance -= _amount;
         rewardPool += _amount;
         if (_banish) {
             _banishWalker(_walker);
-        }
-        else if (walkers[_walker].balance < stakeAmount) {
+        } else if (walkers[_walker].balance < stakeAmount) {
             walkers[_walker].status = Status.UNFUNDED;
         }
     }
 
-    function withdrawStake() external{
+    function withdrawStake() external {
         require(
             walkers[msg.sender].status == Status.PENDING_WITHDRAW,
             "walker has wrong status"
@@ -222,19 +232,25 @@ contract Fellowship {
 
     //view functions
 
-    function checkReward() external view returns(uint256) {
+    function checkReward() external view returns (uint256) {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
-        if(timeSinceLastPayment > 6 * 30 days){
+        if (timeSinceLastPayment > 6 * 30 days) {
             timeSinceLastPayment = 6 * 30 days;
         }
-        return (rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length);
+        return ((rewardPool * timeSinceLastPayment) /
+            6 /
+            30 days /
+            fellowship.length);
     }
 
-    function getFellowshipSize() external view returns(uint256) {
+    function getFellowshipSize() external view returns (uint256) {
         return fellowship.length;
     }
 
-    function getWalkerDetails(address _walker) external view returns(
+    function getWalkerDetails(address _walker)
+        external
+        view
+        returns (
             uint256,
             uint256,
             Status,
@@ -268,9 +284,15 @@ contract Fellowship {
         }
         return false;
     }
+
     function _banishWalker(address _oldWalker) internal {
-        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
-        walkers[fellowship[fellowship.length - 1]].fellowshipIndex = walkers[_oldWalker].fellowshipIndex;
+        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[
+            fellowship.length - 1
+        ];
+        walkers[fellowship[fellowship.length - 1]].fellowshipIndex = walkers[
+            _oldWalker
+        ]
+            .fellowshipIndex;
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
         walkers[_oldWalker].status = Status.INACTIVE;
@@ -283,7 +305,7 @@ contract Fellowship {
         walkers[_oldWalker].rewardBalance = 0;
     }
 
-    function _newWalker(address _walker, string memory _name) internal{
+    function _newWalker(address _walker, string memory _name) internal {
         fellowship.push(_walker);
         walkers[_walker] = Walker({
             date: block.timestamp,

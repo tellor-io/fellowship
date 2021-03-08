@@ -11,17 +11,17 @@ import "./Fellowship.sol";
 contract Rivendale {
     //Storage
     struct Vote {
-        uint256 walkerCount;//Number of total votes by walkers
-        uint256 payeeCount;//Number of total votes by payees
-        uint256 TRBCount;//Number of total votes by TRB holders
+        uint256 walkerCount; //Number of total votes by walkers
+        uint256 payeeCount; //Number of total votes by payees
+        uint256 TRBCount; //Number of total votes by TRB holders
         uint256 walkerTally; //Number of yes votes by walkers
-        uint256 payeeTally;//token weighted tally of yes votes by payees
-        uint256 TRBTally;//token weighted tally of yes votes by TRB holders
-        uint256 tally;//total weighted tally (/1000) of the vote
-        uint256 startDate;//startDate of the vote
-        uint256 startBlock;//startingblock of the vote
-        bool executed;//bool whether the vote has been settled and action ran
-        bytes32 ActionHash;//hash of the action to run upon successful vote
+        uint256 payeeTally; //token weighted tally of yes votes by payees
+        uint256 TRBTally; //token weighted tally of yes votes by TRB holders
+        uint256 tally; //total weighted tally (/1000) of the vote
+        uint256 startDate; //startDate of the vote
+        uint256 startBlock; //startingblock of the vote
+        bool executed; //bool whether the vote has been settled and action ran
+        bytes32 ActionHash; //hash of the action to run upon successful vote
     }
 
     /*
@@ -31,9 +31,9 @@ contract Rivendale {
         20% - TRB Holders
     */
     struct Weightings {
-        uint256 trbWeight;//weight of TRB holders
-        uint256 walkerWeight;//weight of Walkers
-        uint256 userWeight;//weight of payees (users)
+        uint256 trbWeight; //weight of TRB holders
+        uint256 walkerWeight; //weight of Walkers
+        uint256 userWeight; //weight of payees (users)
     }
 
     Weightings weights;
@@ -62,16 +62,32 @@ contract Rivendale {
         uint256 _walker,
         uint256 _user
     ) internal {
+        require(
+            _trb.add(_user).add(_walker) == 1000,
+            "weights must sum to 1000"
+        );
         weights.trbWeight = _trb;
         weights.userWeight = _user;
         weights.walkerWeight = _walker;
     }
 
-    function getWeights() external view returns(uint256,uint256,uint256){
-        return (weights.trbWeight,weights.userWeight,weights.walkerWeight );
+    function getWeights()
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (weights.trbWeight, weights.userWeight, weights.walkerWeight);
     }
 
+    //Should we limit the amount of open votes at a given time?
+    // Imagine the weird scenarion where there are 9 votes open, each one intending to ban one of the walkers, if they all pass do we get an empty rivendale?
+
     function openVote(address destination, bytes memory _function) external {
+        // What happens to the vote funds? They just come to the contract to die?
         require(
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
                 msg.sender,
@@ -85,11 +101,10 @@ contract Rivendale {
         voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
         voteBreakdown[voteCount].startDate = block.timestamp;
         bytes32 actionHash =
-        keccak256(abi.encodePacked(destination, _function));
+            keccak256(abi.encodePacked(destination, _function));
         voteBreakdown[voteCount].ActionHash = actionHash;
         emit NewVote(voteCount, destination, _function);
     }
-
 
     function settleVote(
         uint256 _id,
@@ -111,12 +126,16 @@ contract Rivendale {
         );
         require(!voteBreakdown[_id].executed, "vote has already been settled");
         if (voteBreakdown[_id].tally > 500) {
+            // Should we allow votes with value?
             (succ, res) = destination.call(data); //can we call this contract?
         }
         voteBreakdown[_id].executed = true;
         emit VoteSettled(_id, voteBreakdown[_id].tally > 500);
     }
 
+    // Similar to the OZ zeppelin issues found in the core contracts, we should consider higher limitations for voting
+    // 1.Disallow to vote on future issues
+    // 2. Disallow to vote on settled issues
     function vote(uint256 _id, bool _supports) external {
         require(!voted[msg.sender][_id], "address has already voted");
         require(voteBreakdown[_id].startDate > 0, "vote must be started");
@@ -124,6 +143,8 @@ contract Rivendale {
         Fellowship _fellowship = Fellowship(fellowship);
         uint256[3] memory weightedVotes;
         //If the sender is a supported Walker (voter)
+
+        //walkers with pending withdraws aren't allowed to vote.Should they?
         if (_fellowship.isWalker(msg.sender)) {
             //Increment this election's number of voters
             voteBreakdown[_id].walkerCount++;
@@ -132,9 +153,19 @@ contract Rivendale {
                 voteBreakdown[_id].walkerTally++;
             }
         }
-        if (voteBreakdown[_id].walkerCount > 0){
-            weightedVotes[0] = weights.walkerWeight * (voteBreakdown[_id].walkerTally / voteBreakdown[_id].walkerCount);
+
+        // Since walkers are a priviledged group, shouldn't the tally be based on the total amount of walkers? If there's huge abstention, a single walker can have 40% of voting power.
+
+        // Follow up if above is implemented:
+        // If a waker is banished while a vote is open, will this calculation be messed up?
+        if (voteBreakdown[_id].walkerCount > 0) {
+            weightedVotes[0] =
+                weights.walkerWeight *
+                (voteBreakdown[_id].walkerTally /
+                    voteBreakdown[_id].walkerCount);
         }
+
+        // Can't rich members, in a way, pay to have larger weight passing as a payee? This could be an attack vector in periods of few paying customers
         //increment payee contribution total by voter's contribution
         voteBreakdown[_id].payeeCount += _fellowship.payments(msg.sender);
         //should we make this just "balanceOf" to make it ERC20 compliant
@@ -148,28 +179,47 @@ contract Rivendale {
             voteBreakdown[_id].payeeTally += _fellowship.payments(msg.sender);
             voteBreakdown[_id].TRBTally += _bal;
         }
-         if (voteBreakdown[_id].payeeCount > 0){
-            weightedVotes[1] = weights.userWeight * (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount);
+
+        // Same issue as walkers, with abstentions, a singel payee can have 40% of the weight
+        if (voteBreakdown[_id].payeeCount > 0) {
+            weightedVotes[1] =
+                weights.userWeight *
+                (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount);
         }
-        if (voteBreakdown[_id].TRBCount > 0){
-           weightedVotes[2] = weights.trbWeight * (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
+        if (voteBreakdown[_id].TRBCount > 0) {
+            weightedVotes[2] =
+                weights.trbWeight *
+                (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
         }
-        voteBreakdown[_id].tally = weightedVotes[0] + weightedVotes[1] + weightedVotes[2];
+        voteBreakdown[_id].tally =
+            weightedVotes[0] +
+            weightedVotes[1] +
+            weightedVotes[2];
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
     }
 
-    function getVoteInfo(uint256 _id) external view returns(uint256[9] memory,bool,bytes32){
-        return(
-            [voteBreakdown[_id].walkerCount,
-            voteBreakdown[_id].payeeCount,
-            voteBreakdown[_id].TRBCount,
-            voteBreakdown[_id].walkerTally,
-            voteBreakdown[_id].payeeTally,
-            voteBreakdown[_id].TRBTally,
-            voteBreakdown[_id].tally,
-            voteBreakdown[_id].startDate,
-            voteBreakdown[_id].startBlock],
+    function getVoteInfo(uint256 _id)
+        external
+        view
+        returns (
+            uint256[9] memory,
+            bool,
+            bytes32
+        )
+    {
+        return (
+            [
+                voteBreakdown[_id].walkerCount,
+                voteBreakdown[_id].payeeCount,
+                voteBreakdown[_id].TRBCount,
+                voteBreakdown[_id].walkerTally,
+                voteBreakdown[_id].payeeTally,
+                voteBreakdown[_id].TRBTally,
+                voteBreakdown[_id].tally,
+                voteBreakdown[_id].startDate,
+                voteBreakdown[_id].startBlock
+            ],
             voteBreakdown[_id].executed,
             voteBreakdown[_id].ActionHash
         );
