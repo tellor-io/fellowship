@@ -9,14 +9,29 @@ module.exports = {
   networks: {
     hardhat: {
     },
-    rinkeby: {
-      url: `${process.env.NORE_URL_RINKEBY}`,
+    maticTest: {
+      url: "https://rpc-mumbai.maticvigil.com/",
       accounts: [process.env.PRIVATE_KEY]
     },
-    mainnet: {
-      url: `${process.env.NODE_URL_MAINNET}`,
+    maticMain: {
+      url: "https://rpc-mainnet.maticvigil.com",
+      accounts: [process.env.PRIVATE_KEY]
+    },
+    bscTest: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: [process.env.PRIVATE_KEY]
+    },
+    bscMain: {
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      gasPrice: 20000000000,
       accounts: [process.env.PRIVATE_KEY]
     }
+  },
+  namedAccounts: {
+    deployer: 0,
   },
   solidity: "0.8.0",
 };
