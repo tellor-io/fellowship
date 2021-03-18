@@ -37,10 +37,10 @@ contract Rivendale {
     }
 
     Weightings weights;
-    mapping(address => mapping(uint256 => bool)) voted;
-    mapping(uint256 => Vote) voteBreakdown;
-    uint256 public voteCount;
-    address fellowship;
+    mapping(address => mapping(uint256 => bool)) voted;//mapping of address to mapping of ID's and bool if voted on said ID
+    mapping(uint256 => Vote) voteBreakdown;// mapping of ID to the details of the vote
+    uint256 public voteCount;//Total number of votes handled by Rivendale contract
+    address public fellowship; // address of the fellowship contract. 
 
     //Events
     event NewVote(uint256 voteID, address destination, bytes data);
@@ -51,27 +51,18 @@ contract Rivendale {
     /**
      * @dev Constructor for setting initial variables
      * @param _fellowship the address of the fellowshipContract
-     */
+    */
     constructor(address _fellowship) {
         fellowship = _fellowship;
-        setWeights(200, 400, 400); //should we have a way to change these?
+        setWeights(200, 400, 400);
     }
 
-    function setWeights(
-        uint256 _trb,
-        uint256 _walker,
-        uint256 _user
-    ) internal {
-        weights.trbWeight = _trb;
-        weights.userWeight = _user;
-        weights.walkerWeight = _walker;
-    }
-
-    function getWeights() external view returns(uint256,uint256,uint256){
-        return (weights.trbWeight,weights.userWeight,weights.walkerWeight );
-    }
-
-    function openVote(address destination, bytes memory _function) external {
+    /**
+     * @dev Function to open a vote
+     * @param _destination address to call if vote passes
+     * @param _function bytes of function to call if vote passes
+    */
+    function openVote(address _destination, bytes memory _function) external {
         require(
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
                 msg.sender,
@@ -85,17 +76,22 @@ contract Rivendale {
         voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
         voteBreakdown[voteCount].startDate = block.timestamp;
         bytes32 actionHash =
-        keccak256(abi.encodePacked(destination, _function));
+        keccak256(abi.encodePacked(_destination, _function));
         voteBreakdown[voteCount].ActionHash = actionHash;
-        emit NewVote(voteCount, destination, _function);
+        emit NewVote(voteCount, _destination, _function);
     }
 
-
+    /**
+     * @dev Function to settle a vote after a week has passed
+     * @param _id ID of vote settle
+     * @param _destination destination of function to call
+     * @param _data bytes of function / action to call if successful
+    */
     function settleVote(
         uint256 _id,
-        address destination,
-        bytes calldata data
-    ) external returns (bool succ, bytes memory res) {
+        address _destination,
+        bytes calldata _data
+    ) external returns (bool _succ, bytes memory _res) {
         require(
             block.timestamp - voteBreakdown[_id].startDate > 7 days,
             "vote has not been open long enough"
@@ -106,17 +102,32 @@ contract Rivendale {
         );
         require(
             voteBreakdown[_id].ActionHash ==
-                keccak256(abi.encodePacked(destination, data)),
+                keccak256(abi.encodePacked(_destination, _data)),
             "Wrong action provided"
         );
         require(!voteBreakdown[_id].executed, "vote has already been settled");
-        if (voteBreakdown[_id].tally > 500) {
-            (succ, res) = destination.call(data); //can we call this contract?
+        uint denominator = 1000;
+        if (voteBreakdown[_id].TRBCount == 0){
+            denominator -= weights.trbWeight;
+        }
+        if (voteBreakdown[_id].walkerCount == 0){
+            denominator -= weights.walkerWeight;
+        }
+        if (voteBreakdown[_id].payeeCount == 0){
+            denominator -= weights.userWeight;
+        }
+        if (voteBreakdown[_id].tally > denominator / 2) {
+            (_succ,_res) = _destination.call(_data);
         }
         voteBreakdown[_id].executed = true;
-        emit VoteSettled(_id, voteBreakdown[_id].tally > 500);
+        emit VoteSettled(_id, voteBreakdown[_id].tally > denominator / 2);
     }
 
+    /**
+     * @dev Function to vote
+     * @param _id uint256 id of the vote
+     * @param _supports bool if supports the action being run
+    */
     function vote(uint256 _id, bool _supports) external {
         require(!voted[msg.sender][_id], "address has already voted");
         require(voteBreakdown[_id].startDate > 0, "vote must be started");
@@ -158,7 +169,13 @@ contract Rivendale {
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
     }
-
+    
+    //View Functions
+    /**
+     * @dev function to get details of a given vote id
+     * @param _id uint256 id of vote
+     * @return all information in voteBreakdown mapping
+    */
     function getVoteInfo(uint256 _id) external view returns(uint256[9] memory,bool,bytes32){
         return(
             [voteBreakdown[_id].walkerCount,
@@ -173,5 +190,37 @@ contract Rivendale {
             voteBreakdown[_id].executed,
             voteBreakdown[_id].ActionHash
         );
+    }
+
+    /**
+     * @dev Function to check weights in system
+     * @return TRB weights
+     * @return weight set for users
+     * @return weight set for walkers
+    */
+    function getWeights() external view returns(uint256,uint256,uint256){
+        return (weights.trbWeight,weights.userWeight,weights.walkerWeight );
+    }
+
+    
+    //Internal Functions
+    /**
+     * @dev Internal Function to set weights in the contract
+     * @param _trb weight of TRB holders
+     * @param _walker weight of walkers
+     * @param _user weight of users of the Fellowship
+    **/
+    function setWeights(
+        uint256 _trb,
+        uint256 _walker,
+        uint256 _user
+    ) internal {        
+        require(
+            _trb + _user + _walker == 1000,
+            "weights must sum to 1000"
+        );
+        weights.trbWeight = _trb;
+        weights.userWeight = _user;
+        weights.walkerWeight = _walker;
     }
 }
