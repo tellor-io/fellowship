@@ -84,9 +84,8 @@ contract Fellowship {
      * @param _oldWalker address of walker to be banished (removed from Fellowship)
     **/
     function banishWalker(address _oldWalker) external onlyRivendale {
-        if (walkers[_oldWalker].status != Status.INACTIVE){
-            _banishWalker(_oldWalker);
-        }
+        require(walkers[_oldWalker].status != Status.INACTIVE, "walker is already banished");
+        _banishWalker(_oldWalker);
         emit WalkerBanished(_oldWalker);
     }
 
@@ -148,7 +147,6 @@ contract Fellowship {
         external
         onlyRivendale
     {
-        require(walkers[_walker].date == 0, "cannot already be a walker");
         _newWalker(_walker, _name);
     }
 
@@ -161,18 +159,20 @@ contract Fellowship {
             timeSinceLastPayment = 6 * 30 days;
         }
         uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; 
-        for (uint256 i = 0; i < fellowship.length; i++) {
-            if(walkers[fellowship[i]].status == Status.ACTIVE){
-                walkers[fellowship[i]].rewardBalance += reward;
-                rewardPool -= reward;
-            }  
+        if (reward > 0){
+            for (uint256 i = 0; i < fellowship.length; i++) {
+                if(walkers[fellowship[i]].status == Status.ACTIVE){
+                    walkers[fellowship[i]].rewardBalance += reward;
+                    rewardPool -= reward;
+                }  
+            }
+            lastPayDate = block.timestamp;
+            emit  RewardsPaid(reward);
         }
-        lastPayDate = block.timestamp;
-        emit  RewardsPaid(reward);
     }
     
     /**
-     * @dev Function let walkers recieve their reward
+     * @dev Function lets walkers recieve their reward
     **/
     function recieveReward() external {
         require(
@@ -220,6 +220,7 @@ contract Fellowship {
     function setWalkerInformation(bytes32 _input, bytes memory _output)
         external
     {
+        require(isWalker(msg.sender) || msg.sender == rivendale, "must be a valid walker to use this function");
         information[msg.sender][_input] = _output;
         emit NewWalkerInformation(msg.sender, _input, _output);
     }
@@ -339,7 +340,7 @@ contract Fellowship {
      * @param _party address of walker
      * @return bool if walker has Status.ACTIVE
     **/
-    function isWalker(address _party) external view returns (bool) {
+    function isWalker(address _party) public view returns (bool) {
         if (walkers[_party].status == Status.ACTIVE) {
             return true;
         }
@@ -372,6 +373,7 @@ contract Fellowship {
      * @param _name name of new walker
     **/
     function _newWalker(address _walker, string memory _name) internal{
+        require(walkers[_walker].date == 0, "cannot already be a walker");
         fellowship.push(_walker);
         walkers[_walker] = Walker({
             date: block.timestamp,
