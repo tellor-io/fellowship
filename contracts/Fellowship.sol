@@ -33,6 +33,7 @@ contract Fellowship {
     }
 
     uint256 public lastPayDate; //most recent date walkers were paid
+    uint256 public lastPayDate2; //most recent date walkers were paid
     uint256 public rewardPool; //sum of all payments for services in contract
     uint256 public stakeAmount; //minimum amount each walker needs to stake
     address public rivendale; //the address of the voting contract
@@ -45,6 +46,7 @@ contract Fellowship {
     address[] public fellowship; //The array of chosen individuals who are part of the fellowship
 
     //Events
+    event NewWalker2(address walker);
     event NewWalker(address walker);
     event NewWalkerInformation(address walker, bytes32 input, bytes output);
     event WalkerBanished(address walker);
