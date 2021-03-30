@@ -43,7 +43,7 @@ contract("Fellowship Tests", function(accounts) {
     vars = await fellowship.getWalkerDetails(accounts[4])
     assert(vars[0] > 0, "start date of new walker should be correct")
     assert(vars[1] == 3, "position in index should be correct")
-    assert(vars[2]*1 == 0, "walker status should be correct (active)")
+    assert(vars[2]*1 == 1, "walker status should be correct (active)")
     assert(vars[3] == web3.utils.toWei("10","ether"), "walker balance should be correct")
     assert(vars[4] == 0, "walker reward balance should be correct")
     assert(vars[5] == "Gandalf")
@@ -54,7 +54,7 @@ contract("Fellowship Tests", function(accounts) {
     vars = await fellowship.getWalkerDetails(accounts[1])
     assert(vars[0] > 0, "start date of new walker should be correct")
     assert(vars[1] == 0, "position in fellowship index should be correct")
-    assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
+    assert(vars[2]*1 == 0, "walker status should be correct (inactive)")
     assert(vars[3] == 0, "walker balance should be correct")
     assert(vars[4] == 0, "walker reward balance should be correct")
     assert(vars[5] == "Aragorn")
@@ -63,6 +63,8 @@ contract("Fellowship Tests", function(accounts) {
   });
 
   it("Test Set Walker information", async function() {
+    await token.approve(fellowship.address,web3.utils.toWei("10", "ether"),{from:accounts[1]});
+    await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[1]})
     await fellowship.setWalkerInformation("0x1","0x02",{from:accounts[1]})
     let vars = await fellowship.getWalkerInformation(accounts[1],"0x1");
     assert(vars == "0x02", "information outputted should be correct")
@@ -82,7 +84,7 @@ contract("Fellowship Tests", function(accounts) {
     vars = await fellowship.getWalkerDetails(accounts[1])
     assert(vars[2]*1 == 3, "walker status should be correct (unfunded)")
     vars = await fellowship.getWalkerDetails(accounts[2])
-    assert(vars[2]*1 == 0, "walker status should be correct (active)")
+    assert(vars[2]*1 == 1, "walker status should be correct (active)")
   });  
 
   it("Test New Rivendale", async function() {
@@ -98,7 +100,7 @@ contract("Fellowship Tests", function(accounts) {
     await fellowship.depositStake(web3.utils.toWei("10","ether"),{from:accounts[2]})
     await fellowship.slashWalker(accounts[1],web3.utils.toWei("5","ether"),true)
     vars = await fellowship.getWalkerDetails(accounts[1])
-    assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
+    assert(vars[2]*1 == 0, "walker status should be correct (inactive)")
     assert(vars[3] == 0, "walker balance should be correct")
     assert(initBal*1 + web3.utils.toWei("5","ether")*1 -(await token.balanceOf(accounts[1]))*1 < .001, "walker trb balance should be correct")
     vars = await fellowship.getFellowshipSize();
@@ -151,7 +153,7 @@ contract("Fellowship Tests", function(accounts) {
     for(i=1;i<4;i++){
         await fellowship.withdrawStake({from:accounts[i]})
         vars = await fellowship.getWalkerDetails(accounts[i])
-        assert(vars[2]*1 == 1, "walker status should be correct (inactive)")
+        assert(vars[2]*1 == 0, "walker status should be correct (inactive)")
     }
   });  
 });
