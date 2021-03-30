@@ -1,5 +1,7 @@
-require('hardhat-deploy');
 require("dotenv").config();
+require('hardhat-log-remover');
+require('hardhat-deploy');
+require("hardhat-deploy-ethers");
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -10,11 +12,12 @@ module.exports = {
     hardhat: {
     },
     test: {
-      url: `${process.env.NORE_URL_TEST}`,
-      accounts: [process.env.PRIVATE_KEY]
+      url: `${process.env.NODE_TEST}`,
+      accounts: [process.env.PRIVATE_KEY],
+      explorer: "http://rinkeby.etherscan.io/address/",
     },
     main: {
-      url: `${process.env.NORE_URL_MAIN}`,
+      url: `${process.env.NODE_MAIN}`,
       accounts: [process.env.PRIVATE_KEY]
     },
     maticTest: {
@@ -41,5 +44,14 @@ module.exports = {
   namedAccounts: {
     deployer: 0,
   },
-  solidity: "0.8.0",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.0"
+      }
+    ]
+  },
+  mocha: {
+    timeout: 600000 // 10mins test timeout.
+  }
 };

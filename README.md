@@ -10,11 +10,11 @@ The Fellowship is a group of known parties, secured by decentralized governance 
 See the Litepaper for more details : [LITEPAPER.MD](https://github.com/tellor-io/fellowship/blob/main/LITEPAPER.MD)
 
 
-#### Deploy and verify on BSC
+#### Deploy and verify
 
-hardhat --network bscTest deploy
+hardhat --network <networkName> deploy
 
-hardhat --network bscTest etherscan-verify --api-key ......
+hardhat --network <networkName> etherscan-verify --api-key <api-key>
 
 
 #### Contributors<a name="contributors"> </a>

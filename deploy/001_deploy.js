@@ -1,22 +1,35 @@
+require("dotenv").config();
+
 const func = async function (hre) {
     const { deployments, getNamedAccounts } = hre;
     const { deploy } = deployments;
 
     const { deployer } = await getNamedAccounts();
 
-    await deploy('Fellowship', {
+    if (
+        hre.hardhatArguments.network == "main" ||
+        hre.hardhatArguments.network == "maticMain" ||
+        hre.hardhatArguments.network == "bscMain"
+    ) {
+        await run("remove-logs");
+    }
+
+    const contract = await deploy('Fellowship', {
         from: deployer,
         log: true,
         deterministicDeployment: true,
         args: [
-            "0xBf8a66DeC65A004B6D89950079B66013A4ac9f0D",
+            process.env.ORACLE,
             [
-                "0xBf8a66DeC65A004B6D89950079B66013A4ac9f0D",
-                "0xBf8a66DeC65A004B6D89950079B66013A4ac9f0D",
-                "0xBf8a66DeC65A004B6D89950079B66013A4ac9f0D"
+                process.env.WALKER_1,
+                process.env.WALKER_2,
+                process.env.WALKER_3
             ],
         ],
     });
+
+    console.log("contract deployed to:", hre.network.config.explorer + contract.address);
+
 };
 
 module.exports = func;
