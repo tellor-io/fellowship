@@ -2,7 +2,6 @@ const helpers = require("./helpers/test_helpers.js");
 const Fellowship = artifacts.require("Fellowship.sol");
 const Rivendale = artifacts.require("Rivendale.sol")
 const ERC20 = artifacts.require("/testContracts/ERC20.sol")
-const ABI = Fellowship.ABI;
 const { ethers } = require("ethers");
 
 contract("Fellowship Tests", function (accounts) {

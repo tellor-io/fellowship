@@ -1,3 +1,4 @@
+require("@nomiclabs/hardhat-truffle5");
 require("dotenv").config();
 require('hardhat-log-remover');
 require('hardhat-deploy');
