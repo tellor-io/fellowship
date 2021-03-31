@@ -1,12 +1,12 @@
 const helpers = require("./helpers/test_helpers.js");
 const Fellowship = artifacts.require("Fellowship.sol");
-const Rivendale = artifacts.require("Rivendale.sol")
+const Rivendell = artifacts.require("Rivendell.sol")
 const ERC20 = artifacts.require("/testContracts/ERC20.sol")
 const { ethers } = require("ethers");
 
 contract("Fellowship Tests", function (accounts) {
   let fellowship;
-  let rivendale;
+  let rivendell;
   let token;
   let iface;
 
@@ -16,9 +16,9 @@ contract("Fellowship Tests", function (accounts) {
       await token.faucet(accounts[i], { from: accounts[i] })
     }
     fellowship = await Fellowship.new(token.address, [accounts[1], accounts[2], accounts[3]]);
-    rivendale = await Rivendale.new(fellowship.address);
+    rivendell = await Rivendell.new(fellowship.address);
     iface = await new ethers.utils.Interface(fellowship.abi);
-    await fellowship.newRivendale(accounts[0]);
+    await fellowship.newRivendell(accounts[0]);
   });
 
   it("Test New Walker", async function () {
@@ -85,9 +85,9 @@ contract("Fellowship Tests", function (accounts) {
     assert(vars[2] * 1 == 1, "walker status should be correct (active)")
   });
 
-  it("Test New Rivendale", async function () {
-    await fellowship.newRivendale(rivendale.address);
-    assert(await fellowship.rivendale.call() == rivendale.address, "rivendale address should be correct")
+  it("Test New Rivendell", async function () {
+    await fellowship.newRivendell(rivendell.address);
+    assert(await fellowship.rivendell.call() == rivendell.address, "rivendell address should be correct")
     await helpers.expectThrow(fellowship.newWalker(accounts[1], "fake walker"));
   });
   it("Test Slash Walker", async function () {

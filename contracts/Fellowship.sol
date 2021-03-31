@@ -35,7 +35,7 @@ contract Fellowship {
     uint256 public lastPayDate; //most recent date walkers were paid
     uint256 public rewardPool; //sum of all payments for services in contract
     uint256 public stakeAmount; //minimum amount each walker needs to stake
-    address public rivendale; //the address of the voting contract
+    address public rivendell; //the address of the voting contract
     address public tellor; //address of tellor (the token for staking and payments)
 
     mapping(address => mapping(bytes32 => bytes)) information; //allows parties to store arbitrary information
@@ -55,12 +55,12 @@ contract Fellowship {
 
     //Modifiers
     /**
-     * @dev This modifier restricts the function to only the Rivendale contract
+     * @dev This modifier restricts the function to only the Rivendell contract
      */
-    modifier onlyRivendale {
+    modifier onlyRivendell {
         require(
-            msg.sender == rivendale,
-            "Only rivendale can call this function."
+            msg.sender == rivendell,
+            "Only rivendell can call this function."
         );
         _;
     }
@@ -83,7 +83,7 @@ contract Fellowship {
      * @dev Function to banish a walker
      * @param _oldWalker address of walker to be banished (removed from Fellowship)
      **/
-    function banishWalker(address _oldWalker) external onlyRivendale {
+    function banishWalker(address _oldWalker) external onlyRivendell {
         require(
             walkers[_oldWalker].status != Status.INACTIVE,
             "walker is already banished"
@@ -129,15 +129,15 @@ contract Fellowship {
     }
 
     /**
-     * @dev Change the rivendale (governance) contract
-     * @param _newRivendale address to act as owner of the Fellowship
+     * @dev Change the rivendell (governance) contract
+     * @param _newRivendell address to act as owner of the Fellowship
      **/
-    function newRivendale(address _newRivendale) external {
+    function newRivendell(address _newRivendell) external {
         require(
-            msg.sender == rivendale || rivendale == address(0),
-            "Only rivendale can call this function."
+            msg.sender == rivendell || rivendell == address(0),
+            "Only rivendell can call this function."
         );
-        rivendale = _newRivendale;
+        rivendell = _newRivendell;
     }
 
     /**
@@ -147,7 +147,7 @@ contract Fellowship {
      **/
     function newWalker(address _walker, string memory _name)
         external
-        onlyRivendale
+        onlyRivendell
     {
         _newWalker(_walker, _name);
     }
@@ -206,10 +206,10 @@ contract Fellowship {
     }
 
     /**
-     * @dev Function for rivendale to change the staking amount
+     * @dev Function for rivendell to change the staking amount
      * @param _amount the staking requirement in TRB
      **/
-    function setStakeAmount(uint256 _amount) external onlyRivendale {
+    function setStakeAmount(uint256 _amount) external onlyRivendell {
         stakeAmount = _amount;
         for (uint256 i = 0; i < fellowship.length; i++) {
             if (walkers[fellowship[i]].balance < stakeAmount) {
@@ -227,7 +227,7 @@ contract Fellowship {
         external
     {
         require(
-            isWalker(msg.sender) || msg.sender == rivendale,
+            isWalker(msg.sender) || msg.sender == rivendell,
             "must be a valid walker to use this function"
         );
         information[msg.sender][_input] = _output;
@@ -235,7 +235,7 @@ contract Fellowship {
     }
 
     /**
-     * @dev Function for rivendale to slash a walker
+     * @dev Function for rivendell to slash a walker
      * @param _walker the address of the slashed walker
      * @param _amount the amount to slash
      * @param _banish a bool to say whether the walker is also banished
@@ -244,7 +244,7 @@ contract Fellowship {
         address _walker,
         uint256 _amount,
         bool _banish
-    ) external onlyRivendale {
+    ) external onlyRivendell {
         if (walkers[_walker].balance >= _amount) {
             walkers[_walker].balance -= _amount;
             rewardPool += _amount;
