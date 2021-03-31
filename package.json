@@ -1,7 +1,6 @@
 {
   "name": "fellowship",
   "version": "1.0.0",
-  "main": "truffle-config.js",
   "directories": {
     "test": "test"
   },
