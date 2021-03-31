@@ -6,9 +6,11 @@ node_modules/
 /node_modules
 ./node_modules
 
-#artifacts
+# cache files
 /artifacts
 artifacts
+cache
+
 # Logs
 logs
 *.log
