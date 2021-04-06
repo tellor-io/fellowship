@@ -1,64 +1,47 @@
 const helpers = require("./helpers/test_helpers.js");
 const { expect, assert } = require("chai");
 
+const setup = deployments.createFixture(async ({ deployments, getNamedAccounts, ethers }, options) => {
+  signers = await ethers.getSigners();
+  await deployments.deploy("ERC20", {
+    from: signers[0].address,
+    args: ["Test", "TEST"]
+  });
+  let token = await ethers.getContract("ERC20");
+  for (i = 0; i < 5; i++) {
+    await token.faucet(signers[i].address)
+  }
+
+  let fellowshipDepl = await deployments.deploy("Fellowship",
+    {
+      from: signers[0].address,
+      args: [token.address, [signers[1].address, signers[2].address, signers[3].address]]
+    })
+  let fellowship = await ethers.getContract("Fellowship")
+
+  await deployments.deploy("Rivendell",
+    {
+      from: signers[0].address,
+      args: [fellowship.address]
+    })
+  let rivendell = await ethers.getContract("Rivendell")
+
+
+  let iface = await new ethers.utils.Interface(fellowshipDepl.abi);
+  for (i = 1; i < 4; i++) {
+    await token.connect(signers[i]).approve(fellowship.address, ethers.utils.parseEther("10"));
+    await fellowship.connect(signers[i]).depositStake(ethers.utils.parseEther("10"))
+  }
+  await fellowship.newRivendell(rivendell.address);
+
+  return { signers, fellowship, rivendell, token, iface }
+
+});
+
 describe("Rivendell tests", function () {
 
-  let fellowship;
-  let rivendell;
-  let token;
-  let data;
-  let iface;
-  let signers;
-
-  beforeEach(async function () {
-    // Using deployments.createFixture speeds up the tests as
-    // the reset is done with evm_revert.
-    let res = await setupTest()
-
-    fellowship = res.fellowship
-    rivendell = res.rivendell
-    token = res.token
-    iface = res.iface
-  });
-
-  const setupTest = deployments.createFixture(async ({ deployments, getNamedAccounts, ethers }, options) => {
-    signers = await ethers.getSigners();
-    await deployments.deploy("ERC20", {
-      from: signers[0].address,
-      args: ["Test", "TEST"]
-    });
-    token = await ethers.getContract("ERC20");
-    for (i = 0; i < 5; i++) {
-      await token.faucet(signers[i].address)
-    }
-
-    let fellowshipDepl = await deployments.deploy("Fellowship",
-      {
-        from: signers[0].address,
-        args: [token.address, [signers[1].address, signers[2].address, signers[3].address]]
-      })
-    fellowship = await ethers.getContract("Fellowship")
-
-    await deployments.deploy("Rivendell",
-      {
-        from: signers[0].address,
-        args: [fellowship.address]
-      })
-    rivendell = await ethers.getContract("Rivendell")
-
-
-    iface = await new ethers.utils.Interface(fellowshipDepl.abi);
-    for (i = 1; i < 4; i++) {
-      await token.connect(signers[i]).approve(fellowship.address, ethers.utils.parseEther("10"));
-      await fellowship.connect(signers[i]).depositStake(ethers.utils.parseEther("10"))
-    }
-    await fellowship.newRivendell(rivendell.address);
-
-    return { fellowship, rivendell, token, iface }
-
-  });
-
   it("check correct weights", async function () {
+    const { rivendell } = await setup()
     let vars = await rivendell.getWeights();
     assert(vars[0] == 200)
     assert(vars[1] == 400)
@@ -67,8 +50,9 @@ describe("Rivendell tests", function () {
   });
 
   it("Open Vote", async function () {
+    const { rivendell, fellowship, token, iface } = await setup()
     await token.connect(signers[1]).approve(rivendell.address, ethers.utils.parseEther("1"));
-    data = await iface.encodeFunctionData("newWalker", [signers[4].address, "Gandalf"]);
+    let data = await iface.encodeFunctionData("newWalker", [signers[4].address, "Gandalf"]);
     await rivendell.connect(signers[1]).openVote(fellowship.address, data)
     let vars = await rivendell.getVoteInfo(1);
     let voteCount = await rivendell.voteCount.call();
@@ -85,7 +69,9 @@ describe("Rivendell tests", function () {
     assert(!vars[1], "vote should not be executed")
     assert(vars[2] = data, "actionHash should be correct")
   });
+
   it("Vote / Settle Vote", async function () {
+    const { rivendell, fellowship, token, iface } = await setup()
     await token.connect(signers[1]).approve(rivendell.address, ethers.utils.parseEther("1"));
     let data = await iface.encodeFunctionData("newWalker", [signers[4].address, "Gandalf"]);
     await rivendell.connect(signers[1]).openVote(fellowship.address, data)
@@ -123,7 +109,7 @@ describe("Rivendell tests", function () {
     assert(vars[5] == "Gandalf")
     //check vote closed properly
     vars = await rivendell.getVoteInfo(1);
-    voteCount = await rivendell.voteCount.call();
+    let voteCount = await rivendell.voteCount.call();
     assert(voteCount == 1, "vote Count should be correct")
     assert(vars[0][0] == 3, "walker Count should be correct")
     assert(vars[0][1] == 0, "payeeCount should be correct")
@@ -139,15 +125,16 @@ describe("Rivendell tests", function () {
   });
 
   it("Vote / Settle Failing Vote", async function () {
+    const { rivendell, token, iface, fellowship } = await setup()
     await token.connect(signers[1]).approve(rivendell.address, ethers.utils.parseEther("1"));
-    data = await iface.encodeFunctionData("newWalker", [signers[4].address, "Gandalf"]);
+    let data = await iface.encodeFunctionData("newWalker", [signers[4].address, "Gandalf"]);
     await rivendell.connect(signers[1]).openVote(fellowship.address, data)
     //vote
     await rivendell.connect(signers[1]).vote(1, false)
     await rivendell.connect(signers[2]).vote(1, false)
     await rivendell.connect(signers[3]).vote(1, false)
     //check vote data
-    vars = await rivendell.getVoteInfo(1);
+    let vars = await rivendell.getVoteInfo(1);
     let voteCount = await rivendell.voteCount();
     TRBCount = Number(ethers.utils.parseEther((3 * (1000 - 10) - 1).toString()));
 

@@ -2,62 +2,45 @@ const helpers = require("./helpers/test_helpers.js");
 const { assert } = require("chai");
 
 
+const setupf = deployments.createFixture(async ({ deployments, getNamedAccounts, ethers }, options) => {
+  signers = await ethers.getSigners();
+
+  await deployments.deploy("ERC20", {
+    from: signers[0].address,
+    args: ["Test", "TEST"]
+  });
+  let token = await ethers.getContract("ERC20");
+  for (i = 0; i < 5; i++) {
+    await token.faucet(signers[i].address)
+  }
+
+  let fellowshipDepl = await deployments.deploy("Fellowship",
+    {
+      from: signers[0].address,
+      args: [token.address, [signers[1].address, signers[2].address, signers[3].address]]
+    })
+  let fellowship = await ethers.getContract("Fellowship")
+
+  await deployments.deploy("Rivendell",
+    {
+      from: signers[0].address,
+      args: [fellowship.address]
+    })
+  let rivendell = await ethers.getContract("Rivendell")
+
+  let iface = await new ethers.utils.Interface(fellowshipDepl.abi);
+  await fellowship.newRivendell(signers[0].address);
+
+  return { fellowship, rivendell, token, iface }
+});
 
 describe("Fellowship tests", function () {
 
-  let fellowship;
-  let rivendell;
-  let token;
-  let signers;
-
-  beforeEach("Setup contract for each test", async function () {
-    // Using deployments.createFixture speeds up the tests as
-    // the reset is done with evm_revert.
-    let res = await setupTest()
-
-    fellowship = res.fellowship
-    rivendell = res.rivendell
-    token = res.token
-    iface = res.iface
-
-  });
-
-  const setupTest = deployments.createFixture(async ({ deployments, getNamedAccounts, ethers }, options) => {
-    signers = await ethers.getSigners();
-
-    await deployments.deploy("ERC20", {
-      from: signers[0].address,
-      args: ["Test", "TEST"]
-    });
-    token = await ethers.getContract("ERC20");
-    for (i = 0; i < 5; i++) {
-      await token.faucet(signers[i].address)
-    }
-
-    let fellowshipDepl = await deployments.deploy("Fellowship",
-      {
-        from: signers[0].address,
-        args: [token.address, [signers[1].address, signers[2].address, signers[3].address]]
-      })
-    fellowship = await ethers.getContract("Fellowship")
-
-    await deployments.deploy("Rivendell",
-      {
-        from: signers[0].address,
-        args: [fellowship.address]
-      })
-    rivendell = await ethers.getContract("Rivendell")
-
-    iface = await new ethers.utils.Interface(fellowshipDepl.abi);
-    await fellowship.newRivendell(signers[0].address);
-
-    return { fellowship, rivendell, token, iface }
-  });
-
-
   it("Test New Walker", async function () {
+    const { fellowship } = await setupf()
+
     // await fellowship.newWalker(signers[4].address, "Gandalf")
-    // vars = await fellowship.getWalkerDetails(signers[4].address)
+    // let vars = await fellowship.getWalkerDetails(signers[4].address)
     // assert(vars[0] > 0, "start date of new walker should be correct")
     // assert(vars[1] > 1)
     // assert(vars[2] * 1 == 3, "walker status should be correct (unfunded)")
