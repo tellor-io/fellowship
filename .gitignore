@@ -6,6 +6,10 @@ node_modules/
 /node_modules
 ./node_modules
 
+#deployment
+deployments
+/deployments
+
 # cache files
 /artifacts
 artifacts
