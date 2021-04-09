@@ -137,7 +137,7 @@ contract Fellowship {
             msg.sender == rivendell || rivendell == address(0),
             "Only rivendell can call this function."
         );
-        rivendell = _newRivenell;
+        rivendell = _newRivendell;
     }
 
     /**

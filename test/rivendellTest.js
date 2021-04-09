@@ -35,7 +35,7 @@ contract("Rivendell Tests", function(accounts) {
   });
   it("Open Vote", async function() {
     await token.approve(rivendell.address,web3.utils.toWei("1", "ether"),{from:accounts[1]});
-    data = await iface.functions.newWalker.encode([accounts[4],"Gandalf"]);
+    data = await iface.encodeFunctionData("newWalker",[accounts[4],"Gandalf"]);
     await rivendell.openVote(fellowship.address,data,{from:accounts[1]})
     vars = await rivendell.getVoteInfo(1);
     let voteCount = await rivendell.voteCount.call();
@@ -54,7 +54,7 @@ contract("Rivendell Tests", function(accounts) {
   });
   it("Vote / Settle Vote", async function() {
     await token.approve(rivendell.address,web3.utils.toWei("1", "ether"),{from:accounts[1]});
-    data = await iface.functions.newWalker.encode([accounts[4],"Gandalf"]);
+    data = await iface.encodeFunctionData("newWalker",[accounts[4],"Gandalf"]);
     await rivendell.openVote(fellowship.address,data,{from:accounts[1]})
     vars = await rivendell.getVoteInfo(1);
     //vote
@@ -107,7 +107,7 @@ contract("Rivendell Tests", function(accounts) {
 
   it("Vote / Settle Failing Vote", async function() {
     await token.approve(rivendell.address,web3.utils.toWei("1", "ether"),{from:accounts[1]});
-    data = await iface.functions.newWalker.encode([accounts[4],"Gandalf"]);
+    data = await iface.encodeFunctionData("newWalker",[accounts[4],"Gandalf"]);
     await rivendell.openVote(fellowship.address,data,{from:accounts[1]})
     vars = await rivendell.getVoteInfo(1);
     //vote
