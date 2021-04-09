@@ -5,23 +5,23 @@ import "./Fellowship.sol";
 
 /** 
  @author Tellor Inc.
- @title Rivendale
+ @title Rivendell
  @dev This contract holds the voting logic to be used in the Fellowship contract
 **/
-contract Rivendale {
+contract Rivendell {
     //Storage
     struct Vote {
-        uint256 walkerCount;//Number of total votes by walkers
-        uint256 payeeCount;//Number of total votes by payees
-        uint256 TRBCount;//Number of total votes by TRB holders
+        uint256 walkerCount; //Number of total votes by walkers
+        uint256 payeeCount; //Number of total votes by payees
+        uint256 TRBCount; //Number of total votes by TRB holders
         uint256 walkerTally; //Number of yes votes by walkers
-        uint256 payeeTally;//token weighted tally of yes votes by payees
-        uint256 TRBTally;//token weighted tally of yes votes by TRB holders
-        uint256 tally;//total weighted tally (/1000) of the vote
-        uint256 startDate;//startDate of the vote
-        uint256 startBlock;//startingblock of the vote
-        bool executed;//bool whether the vote has been settled and action ran
-        bytes32 ActionHash;//hash of the action to run upon successful vote
+        uint256 payeeTally; //token weighted tally of yes votes by payees
+        uint256 TRBTally; //token weighted tally of yes votes by TRB holders
+        uint256 tally; //total weighted tally (/1000) of the vote
+        uint256 startDate; //startDate of the vote
+        uint256 startBlock; //startingblock of the vote
+        bool executed; //bool whether the vote has been settled and action ran
+        bytes32 ActionHash; //hash of the action to run upon successful vote
     }
 
     /*
@@ -31,16 +31,16 @@ contract Rivendale {
         20% - TRB Holders
     */
     struct Weightings {
-        uint256 trbWeight;//weight of TRB holders
-        uint256 walkerWeight;//weight of Walkers
-        uint256 userWeight;//weight of payees (users)
+        uint256 trbWeight; //weight of TRB holders
+        uint256 walkerWeight; //weight of Walkers
+        uint256 userWeight; //weight of payees (users)
     }
 
     Weightings weights;
-    mapping(address => mapping(uint256 => bool)) voted;//mapping of address to mapping of ID's and bool if voted on said ID
-    mapping(uint256 => Vote) voteBreakdown;// mapping of ID to the details of the vote
-    uint256 public voteCount;//Total number of votes handled by Rivendale contract
-    address public fellowship; // address of the fellowship contract. 
+    mapping(address => mapping(uint256 => bool)) voted; //mapping of address to mapping of ID's and bool if voted on said ID
+    mapping(uint256 => Vote) voteBreakdown; // mapping of ID to the details of the vote
+    uint256 public voteCount; //Total number of votes handled by Rivendell contract
+    address public fellowship; // address of the fellowship contract.
 
     //Events
     event NewVote(uint256 voteID, address destination, bytes data);
@@ -51,7 +51,7 @@ contract Rivendale {
     /**
      * @dev Constructor for setting initial variables
      * @param _fellowship the address of the fellowshipContract
-    */
+     */
     constructor(address _fellowship) {
         fellowship = _fellowship;
         setWeights(200, 400, 400);
@@ -61,7 +61,7 @@ contract Rivendale {
      * @dev Function to open a vote
      * @param _destination address to call if vote passes
      * @param _function bytes of function to call if vote passes
-    */
+     */
     function openVote(address _destination, bytes memory _function) external {
         require(
             ERC20Interface(Fellowship(fellowship).tellor()).transferFrom(
@@ -76,7 +76,7 @@ contract Rivendale {
         voteBreakdown[voteCount].startBlock = block.number; //safe to index vote from voteBreakdown mapping with VoteCount?
         voteBreakdown[voteCount].startDate = block.timestamp;
         bytes32 actionHash =
-        keccak256(abi.encodePacked(_destination, _function));
+            keccak256(abi.encodePacked(_destination, _function));
         voteBreakdown[voteCount].ActionHash = actionHash;
         emit NewVote(voteCount, _destination, _function);
     }
@@ -86,7 +86,7 @@ contract Rivendale {
      * @param _id ID of vote settle
      * @param _destination destination of function to call
      * @param _data bytes of function / action to call if successful
-    */
+     */
     function settleVote(
         uint256 _id,
         address _destination,
@@ -106,18 +106,18 @@ contract Rivendale {
             "Wrong action provided"
         );
         require(!voteBreakdown[_id].executed, "vote has already been settled");
-        uint denominator = 1000;
-        if (voteBreakdown[_id].TRBCount == 0){
+        uint256 denominator = 1000;
+        if (voteBreakdown[_id].TRBCount == 0) {
             denominator -= weights.trbWeight;
         }
-        if (voteBreakdown[_id].walkerCount == 0){
+        if (voteBreakdown[_id].walkerCount == 0) {
             denominator -= weights.walkerWeight;
         }
-        if (voteBreakdown[_id].payeeCount == 0){
+        if (voteBreakdown[_id].payeeCount == 0) {
             denominator -= weights.userWeight;
         }
         if (voteBreakdown[_id].tally > denominator / 2) {
-            (_succ,_res) = _destination.call(_data);
+            (_succ, _res) = _destination.call(_data);
         }
         voteBreakdown[_id].executed = true;
         emit VoteSettled(_id, voteBreakdown[_id].tally > denominator / 2);
@@ -127,7 +127,7 @@ contract Rivendale {
      * @dev Function to vote
      * @param _id uint256 id of the vote
      * @param _supports bool if supports the action being run
-    */
+     */
     function vote(uint256 _id, bool _supports) external {
         require(!voted[msg.sender][_id], "address has already voted");
         require(voteBreakdown[_id].startDate > 0, "vote must be started");
@@ -143,8 +143,11 @@ contract Rivendale {
                 voteBreakdown[_id].walkerTally++;
             }
         }
-        if (voteBreakdown[_id].walkerCount > 0){
-            weightedVotes[0] = weights.walkerWeight * (voteBreakdown[_id].walkerTally / voteBreakdown[_id].walkerCount);
+        if (voteBreakdown[_id].walkerCount > 0) {
+            weightedVotes[0] =
+                weights.walkerWeight *
+                (voteBreakdown[_id].walkerTally /
+                    voteBreakdown[_id].walkerCount);
         }
         //increment payee contribution total by voter's contribution
         voteBreakdown[_id].payeeCount += _fellowship.payments(msg.sender);
@@ -159,34 +162,51 @@ contract Rivendale {
             voteBreakdown[_id].payeeTally += _fellowship.payments(msg.sender);
             voteBreakdown[_id].TRBTally += _bal;
         }
-         if (voteBreakdown[_id].payeeCount > 0){
-            weightedVotes[1] = weights.userWeight * (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount);
+        if (voteBreakdown[_id].payeeCount > 0) {
+            weightedVotes[1] =
+                weights.userWeight *
+                (voteBreakdown[_id].payeeTally / voteBreakdown[_id].payeeCount);
         }
-        if (voteBreakdown[_id].TRBCount > 0){
-           weightedVotes[2] = weights.trbWeight * (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
+        if (voteBreakdown[_id].TRBCount > 0) {
+            weightedVotes[2] =
+                weights.trbWeight *
+                (voteBreakdown[_id].TRBTally / voteBreakdown[_id].TRBCount);
         }
-        voteBreakdown[_id].tally = weightedVotes[0] + weightedVotes[1] + weightedVotes[2];
+        voteBreakdown[_id].tally =
+            weightedVotes[0] +
+            weightedVotes[1] +
+            weightedVotes[2];
         voted[msg.sender][_id] = true;
         emit Voted(voteBreakdown[_id].tally, msg.sender);
     }
-    
+
     //View Functions
     /**
      * @dev function to get details of a given vote id
      * @param _id uint256 id of vote
      * @return all information in voteBreakdown mapping
-    */
-    function getVoteInfo(uint256 _id) external view returns(uint256[9] memory,bool,bytes32){
-        return(
-            [voteBreakdown[_id].walkerCount,
-            voteBreakdown[_id].payeeCount,
-            voteBreakdown[_id].TRBCount,
-            voteBreakdown[_id].walkerTally,
-            voteBreakdown[_id].payeeTally,
-            voteBreakdown[_id].TRBTally,
-            voteBreakdown[_id].tally,
-            voteBreakdown[_id].startDate,
-            voteBreakdown[_id].startBlock],
+     */
+    function getVoteInfo(uint256 _id)
+        external
+        view
+        returns (
+            uint256[9] memory,
+            bool,
+            bytes32
+        )
+    {
+        return (
+            [
+                voteBreakdown[_id].walkerCount,
+                voteBreakdown[_id].payeeCount,
+                voteBreakdown[_id].TRBCount,
+                voteBreakdown[_id].walkerTally,
+                voteBreakdown[_id].payeeTally,
+                voteBreakdown[_id].TRBTally,
+                voteBreakdown[_id].tally,
+                voteBreakdown[_id].startDate,
+                voteBreakdown[_id].startBlock
+            ],
             voteBreakdown[_id].executed,
             voteBreakdown[_id].ActionHash
         );
@@ -197,28 +217,32 @@ contract Rivendale {
      * @return TRB weights
      * @return weight set for users
      * @return weight set for walkers
-    */
-    function getWeights() external view returns(uint256,uint256,uint256){
-        return (weights.trbWeight,weights.userWeight,weights.walkerWeight );
+     */
+    function getWeights()
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (weights.trbWeight, weights.userWeight, weights.walkerWeight);
     }
 
-    
     //Internal Functions
     /**
      * @dev Internal Function to set weights in the contract
      * @param _trb weight of TRB holders
      * @param _walker weight of walkers
      * @param _user weight of users of the Fellowship
-    **/
+     **/
     function setWeights(
         uint256 _trb,
         uint256 _walker,
         uint256 _user
-    ) internal {        
-        require(
-            _trb + _user + _walker == 1000,
-            "weights must sum to 1000"
-        );
+    ) internal {
+        require(_trb + _user + _walker == 1000, "weights must sum to 1000");
         weights.trbWeight = _trb;
         weights.userWeight = _user;
         weights.walkerWeight = _walker;

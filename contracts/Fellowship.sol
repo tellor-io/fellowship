@@ -24,25 +24,25 @@ contract Fellowship {
     enum Status {INACTIVE, ACTIVE, PENDING_WITHDRAW, UNFUNDED}
 
     struct Walker {
-        Status status;//status of walker
-        uint256 date;//date the walker initally was chosen
-        uint256 fellowshipIndex;//index of walker in the fellowship array
-        uint256 balance;//TRB balance of walker (must be > stakeAmount to be ACTIVE)
-        uint256 rewardBalance;//balance of rewards they own
-        string name;//name of walker
+        Status status; //status of walker
+        uint256 date; //date the walker initally was chosen
+        uint256 fellowshipIndex; //index of walker in the fellowship array
+        uint256 balance; //TRB balance of walker (must be > stakeAmount to be ACTIVE)
+        uint256 rewardBalance; //balance of rewards they own
+        string name; //name of walker
     }
 
-    uint256 public lastPayDate;//most recent date walkers were paid
-    uint256 public rewardPool;//sum of all payments for services in contract
-    uint256 public stakeAmount;//minimum amount each walker needs to stake
-    address public rivendale;//the address of the voting contract
-    address public tellor;//address of tellor (the token for staking and payments)
+    uint256 public lastPayDate; //most recent date walkers were paid
+    uint256 public rewardPool; //sum of all payments for services in contract
+    uint256 public stakeAmount; //minimum amount each walker needs to stake
+    address public rivendell; //the address of the voting contract
+    address public tellor; //address of tellor (the token for staking and payments)
 
-    mapping(address => mapping(bytes32 => bytes)) information;//allows parties to store arbitrary information
-    mapping(address => Walker) public walkers;//a mapping of an address to their information as a Walker
-    mapping(address => uint256) public payments;//a mapping of an address to the payment amount they've given
+    mapping(address => mapping(bytes32 => bytes)) information; //allows parties to store arbitrary information
+    mapping(address => Walker) public walkers; //a mapping of an address to their information as a Walker
+    mapping(address => uint256) public payments; //a mapping of an address to the payment amount they've given
     //The Fellowship:
-    address[] public fellowship;//The array of chosen individuals who are part of the fellowship
+    address[] public fellowship; //The array of chosen individuals who are part of the fellowship
 
     //Events
     event NewWalker(address walker);
@@ -55,12 +55,12 @@ contract Fellowship {
 
     //Modifiers
     /**
-     * @dev This modifier restricts the function to only the Rivendale contract
+     * @dev This modifier restricts the function to only the Rivendell contract
      */
-    modifier onlyRivendale {
+    modifier onlyRivendell {
         require(
-            msg.sender == rivendale,
-            "Only rivendale can call this function."
+            msg.sender == rivendell,
+            "Only rivendell can call this function."
         );
         _;
     }
@@ -71,20 +71,23 @@ contract Fellowship {
      * @param _tellor the address of the tellor contract
      * @param _initialWalkers an array of three addresses to serve as the initial walkers
      */
-    constructor(address _tellor,address[3] memory _initialWalkers) {
+    constructor(address _tellor, address[3] memory _initialWalkers) {
         tellor = _tellor;
-        _newWalker(_initialWalkers[0],"Aragorn");
-        _newWalker(_initialWalkers[1],"Legolas");
-        _newWalker(_initialWalkers[2],"Gimli");
+        _newWalker(_initialWalkers[0], "Aragorn");
+        _newWalker(_initialWalkers[1], "Legolas");
+        _newWalker(_initialWalkers[2], "Gimli");
         stakeAmount = 10 ether;
     }
 
     /**
      * @dev Function to banish a walker
      * @param _oldWalker address of walker to be banished (removed from Fellowship)
-    **/
-    function banishWalker(address _oldWalker) external onlyRivendale {
-        require(walkers[_oldWalker].status != Status.INACTIVE, "walker is already banished");
+     **/
+    function banishWalker(address _oldWalker) external onlyRivendell {
+        require(
+            walkers[_oldWalker].status != Status.INACTIVE,
+            "walker is already banished"
+        );
         _banishWalker(_oldWalker);
         emit WalkerBanished(_oldWalker);
     }
@@ -92,24 +95,23 @@ contract Fellowship {
     /**
      * @dev Function to deposit payment to use Fellowship
      * @param _amount amount of TRB to be used as payment
-    **/
+     **/
     function depositPayment(uint256 _amount) external {
-        if(rewardPool > 0){
+        if (rewardPool > 0) {
             payReward();
-        }
-        else{
+        } else {
             lastPayDate = block.timestamp;
         }
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         payments[msg.sender] += _amount;
         rewardPool += _amount;
-        emit PaymentDeposited(msg.sender,_amount);
+        emit PaymentDeposited(msg.sender, _amount);
     }
 
     /**
      * @dev Function to deposit a stake for walkers
      * @param _amount amount of TRB to deposit to account
-    **/
+     **/
     function depositStake(uint256 _amount) external {
         ERC20Interface(tellor).transferFrom(msg.sender, address(this), _amount);
         walkers[msg.sender].balance += _amount;
@@ -121,59 +123,63 @@ contract Fellowship {
             walkers[msg.sender].status != Status.PENDING_WITHDRAW,
             "Walker has wrong status"
         );
-        if (walkers[msg.sender].balance >= stakeAmount){
+        if (walkers[msg.sender].balance >= stakeAmount) {
             walkers[msg.sender].status = Status.ACTIVE;
         }
     }
 
     /**
-     * @dev Change the rivendale (governance) contract
-     * @param _newRivendale address to act as owner of the Fellowship
-    **/
-    function newRivendale(address _newRivendale) external {
+     * @dev Change the rivendell (governance) contract
+     * @param _newRivendell address to act as owner of the Fellowship
+     **/
+    function newRivendell(address _newRivendell) external {
         require(
-            msg.sender == rivendale || rivendale == address(0),
-            "Only rivendale can call this function."
+            msg.sender == rivendell || rivendell == address(0),
+            "Only rivendell can call this function."
         );
-        rivendale = _newRivendale;
+        rivendell = _newRivendell;
     }
 
     /**
      * @dev Function to add a new walker
      * @param _walker address of walker to be banished (removed from Fellowship)
      * @param _name name of walker
-    **/
+     **/
     function newWalker(address _walker, string memory _name)
         external
-        onlyRivendale
+        onlyRivendell
     {
         _newWalker(_walker, _name);
     }
 
     /**
      * @dev function to pay a reward to the walkers
-    **/
+     **/
     function payReward() public {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
-        if(timeSinceLastPayment > 6 * 30 days){
+        if (timeSinceLastPayment > 6 * 30 days) {
             timeSinceLastPayment = 6 * 30 days;
         }
-        uint256 reward =rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length; 
-        if (reward > 0){
+        uint256 reward =
+            (rewardPool * timeSinceLastPayment) /
+                6 /
+                30 days /
+                fellowship.length;
+        if (reward > 0) {
             for (uint256 i = 0; i < fellowship.length; i++) {
-                if(walkers[fellowship[i]].status == Status.ACTIVE){
+                if (walkers[fellowship[i]].status == Status.ACTIVE) {
                     walkers[fellowship[i]].rewardBalance += reward;
                     rewardPool -= reward;
-                }  
+                }
             }
             lastPayDate = block.timestamp;
-            emit  RewardsPaid(reward);
+            emit RewardsPaid(reward);
         }
     }
-    
+
     /**
      * @dev Function lets walkers recieve their reward
-    **/
+     **/
     function recieveReward() external {
         require(
             walkers[msg.sender].status == Status.ACTIVE,
@@ -187,9 +193,9 @@ contract Fellowship {
     }
 
     /**
-     * @dev Function for walkers to request to withdraw their stake 
-    **/
-    function requestStakingWithdraw() external{
+     * @dev Function for walkers to request to withdraw their stake
+     **/
+    function requestStakingWithdraw() external {
         require(
             walkers[msg.sender].status != Status.INACTIVE,
             "Walker has wrong status"
@@ -200,13 +206,13 @@ contract Fellowship {
     }
 
     /**
-     * @dev Function for rivendale to change the staking amount
+     * @dev Function for rivendell to change the staking amount
      * @param _amount the staking requirement in TRB
-    **/
-    function setStakeAmount(uint256 _amount) external onlyRivendale {
+     **/
+    function setStakeAmount(uint256 _amount) external onlyRivendell {
         stakeAmount = _amount;
-        for(uint256 i = 0;i<fellowship.length;i++){
-            if(walkers[fellowship[i]].balance < stakeAmount){
+        for (uint256 i = 0; i < fellowship.length; i++) {
+            if (walkers[fellowship[i]].balance < stakeAmount) {
                 walkers[fellowship[i]].status = Status.UNFUNDED;
             }
         }
@@ -216,44 +222,49 @@ contract Fellowship {
      * @dev Function for walkers to store arbitrary information mapped to their account
      * @param _input the key for the mapping
      * @param _output the result for the mapping
-    **/
+     **/
     function setWalkerInformation(bytes32 _input, bytes memory _output)
         external
     {
-        require(isWalker(msg.sender) || msg.sender == rivendale, "must be a valid walker to use this function");
+        require(
+            isWalker(msg.sender) || msg.sender == rivendell,
+            "must be a valid walker to use this function"
+        );
         information[msg.sender][_input] = _output;
         emit NewWalkerInformation(msg.sender, _input, _output);
     }
 
     /**
-     * @dev Function for rivendale to slash a walker
+     * @dev Function for rivendell to slash a walker
      * @param _walker the address of the slashed walker
      * @param _amount the amount to slash
      * @param _banish a bool to say whether the walker is also banished
-    **/
-    function slashWalker(address _walker,uint256 _amount,bool _banish) external onlyRivendale {
-        if(walkers[_walker].balance >= _amount){
+     **/
+    function slashWalker(
+        address _walker,
+        uint256 _amount,
+        bool _banish
+    ) external onlyRivendell {
+        if (walkers[_walker].balance >= _amount) {
             walkers[_walker].balance -= _amount;
             rewardPool += _amount;
-        }
-        else if (walkers[_walker].balance > 0){
+        } else if (walkers[_walker].balance > 0) {
             rewardPool += walkers[_walker].balance;
             walkers[_walker].balance = 0;
         }
         if (_banish) {
-            if (walkers[_walker].status != Status.INACTIVE){
+            if (walkers[_walker].status != Status.INACTIVE) {
                 _banishWalker(_walker);
             }
-        }
-        else if (walkers[_walker].balance < stakeAmount) {
+        } else if (walkers[_walker].balance < stakeAmount) {
             walkers[_walker].status = Status.UNFUNDED;
         }
     }
 
     /**
      * @dev Function for walkers to withdraw stake two weeks after requesting a withdrawal
-    **/
-    function withdrawStake() external{
+     **/
+    function withdrawStake() external {
         require(
             walkers[msg.sender].status == Status.PENDING_WITHDRAW,
             "walker has wrong status"
@@ -275,20 +286,23 @@ contract Fellowship {
     /**
      * @dev Function returns the current reward for each walker
      * @return uint256 reward
-    **/
-    function checkReward() external view returns(uint256) {
+     **/
+    function checkReward() external view returns (uint256) {
         uint256 timeSinceLastPayment = block.timestamp - lastPayDate;
-        if(timeSinceLastPayment > 6 * 30 days){
+        if (timeSinceLastPayment > 6 * 30 days) {
             timeSinceLastPayment = 6 * 30 days;
         }
-        return (rewardPool*timeSinceLastPayment/6 /30 days/fellowship.length);
+        return ((rewardPool * timeSinceLastPayment) /
+            6 /
+            30 days /
+            fellowship.length);
     }
 
     /**
      * @dev Function to return the fellowship size
      * @return uint256 size
-    **/
-    function getFellowshipSize() external view returns(uint256) {
+     **/
+    function getFellowshipSize() external view returns (uint256) {
         return fellowship.length;
     }
 
@@ -301,8 +315,11 @@ contract Fellowship {
      * @return uint256 balance of the walker staked
      * @return uint256 balance for withrawal by the walker
      * @return string name of the walker
-    **/
-    function getWalkerDetails(address _walker) external view returns(
+     **/
+    function getWalkerDetails(address _walker)
+        external
+        view
+        returns (
             uint256,
             uint256,
             Status,
@@ -326,7 +343,7 @@ contract Fellowship {
      * @param _walker address of walker
      * @param _input mapping key for information mapping
      * @return bytes output of mapping
-    **/
+     **/
     function getWalkerInformation(address _walker, bytes32 _input)
         external
         view
@@ -339,7 +356,7 @@ contract Fellowship {
      * @dev Function to check if walker's status is active
      * @param _party address of walker
      * @return bool if walker has Status.ACTIVE
-    **/
+     **/
     function isWalker(address _party) public view returns (bool) {
         if (walkers[_party].status == Status.ACTIVE) {
             return true;
@@ -351,10 +368,15 @@ contract Fellowship {
     /**
      * @dev Internal function to banish a given walker
      * @param _oldWalker walker to banish
-    **/
+     **/
     function _banishWalker(address _oldWalker) internal {
-        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[fellowship.length - 1];
-        walkers[fellowship[fellowship.length - 1]].fellowshipIndex = walkers[_oldWalker].fellowshipIndex;
+        fellowship[walkers[_oldWalker].fellowshipIndex] = fellowship[
+            fellowship.length - 1
+        ];
+        walkers[fellowship[fellowship.length - 1]].fellowshipIndex = walkers[
+            _oldWalker
+        ]
+            .fellowshipIndex;
         fellowship.pop();
         walkers[_oldWalker].fellowshipIndex = 0;
         walkers[_oldWalker].status = Status.INACTIVE;
@@ -371,8 +393,8 @@ contract Fellowship {
      * @dev Internal function to add a new walker
      * @param _walker address of new walker
      * @param _name name of new walker
-    **/
-    function _newWalker(address _walker, string memory _name) internal{
+     **/
+    function _newWalker(address _walker, string memory _name) internal {
         require(walkers[_walker].date == 0, "cannot already be a walker");
         fellowship.push(_walker);
         walkers[_walker] = Walker({

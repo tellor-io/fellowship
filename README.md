@@ -7,7 +7,14 @@
 
 The Fellowship is a group of known parties, secured by decentralized governance who will sign data and provide oracle services to products that are not fit for the current Tellor design. 
 
-See the Litepaper for more details : [LITEPAPER.MD](https://github.com/tellor-io/fellowship/blob/main/LITEPAPER.MD)
+See the Litepaper for more details : [LITEPAPER.MD](LITEPAPER.MD)
+
+
+#### Deploy and verify
+
+hardhat --network <networkName> deploy
+
+hardhat --network <networkName> etherscan-verify --api-key <api-key>
 
 
 #### Contributors<a name="contributors"> </a>

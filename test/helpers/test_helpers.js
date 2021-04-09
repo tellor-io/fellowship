@@ -1,51 +1,8 @@
-advanceTimeAndBlock = async (time) => {
-  await advanceTime(time);
-  await advanceBlock();
-  console.log("Time Travelling...");
-  return Promise.resolve(web3.eth.getBlock("latest"));
-};
+const { assert } = require("chai");
 
-const takeFifteen = async () => {
-  await advanceTime(60 * 18);
-};
-
-advanceTime = (time) => {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send(
-      {
-        jsonrpc: "2.0",
-        method: "evm_increaseTime",
-        params: [time],
-        id: new Date().getTime(),
-      },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(result);
-      }
-    );
-  });
-};
-
-advanceBlock = () => {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send(
-      {
-        jsonrpc: "2.0",
-        method: "evm_mine",
-        id: new Date().getTime(),
-      },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        const newBlockHash = web3.eth.getBlock("latest").hash;
-
-        return resolve(newBlockHash);
-      }
-    );
-  });
+advanceTime = async (time) => {
+  await waffle.provider.send("evm_increaseTime", [time]);
+  await waffle.provider.send("evm_mine");
 };
 
 async function expectThrow(promise) {
@@ -64,10 +21,8 @@ async function expectThrow(promise) {
   assert.fail("Expected throw not received");
 }
 
+
 module.exports = {
   advanceTime,
-  advanceBlock,
-  advanceTimeAndBlock,
-  takeFifteen,
   expectThrow,
 };
