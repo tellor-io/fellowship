@@ -5,10 +5,10 @@ import "./Fellowship.sol";
 
 /** 
  @author Tellor Inc.
- @title Rivendale
+ @title Rivendell
  @dev This contract holds the voting logic to be used in the Fellowship contract
 **/
-contract Rivendale {
+contract Rivendell {
     //Storage
     struct Vote {
         uint256 walkerCount; //Number of total votes by walkers
@@ -39,7 +39,7 @@ contract Rivendale {
     Weightings weights;
     mapping(address => mapping(uint256 => bool)) voted; //mapping of address to mapping of ID's and bool if voted on said ID
     mapping(uint256 => Vote) voteBreakdown; // mapping of ID to the details of the vote
-    uint256 public voteCount; //Total number of votes handled by Rivendale contract
+    uint256 public voteCount; //Total number of votes handled by Rivendell contract
     address public fellowship; // address of the fellowship contract.
 
     //Events
