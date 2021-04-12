@@ -116,10 +116,10 @@ contract Rivendell {
         if (voteBreakdown[_id].payeeCount == 0) {
             denominator -= weights.userWeight;
         }
+        voteBreakdown[_id].executed = true;
         if (voteBreakdown[_id].tally > denominator / 2) {
             (_succ, _res) = _destination.call(_data);
         }
-        voteBreakdown[_id].executed = true;
         emit VoteSettled(_id, voteBreakdown[_id].tally > denominator / 2);
     }
 
