@@ -10,6 +10,7 @@ node_modules/
 /artifacts
 artifacts
 cache
+package-lock.json
 
 # Logs
 logs
