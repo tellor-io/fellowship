@@ -2,20 +2,26 @@
 
 <img src="./public/fellowshipSnow.png">
 
-#### Note: Everything in this repo is in the draft stage and open for comment
 
-
-The Fellowship is a group of known parties, secured by decentralized governance who will sign data and provide oracle services to products that are not fit for the current Tellor design. 
+The Fellowship is a selected set of addresses, secured by decentralized governance who will sign data and provide oracle services to products that are not fit for the current Tellor design. 
 
 See the Litepaper for more details : [LITEPAPER.MD](LITEPAPER.MD)
 
+#### Compiling and Testing
+
+```
+npx hardhat compile
+
+npx hardhat test
+```
 
 #### Deploy and verify
 
+```
 hardhat --network <networkName> deploy
 
 hardhat --network <networkName> etherscan-verify --api-key <api-key>
-
+```
 
 #### Contributors<a name="contributors"> </a>
 
