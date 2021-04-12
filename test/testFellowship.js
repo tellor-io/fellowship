@@ -20,6 +20,20 @@ contract("Fellowship Tests", function (accounts) {
     iface = await new ethers.utils.Interface(fellowship.abi);
     await fellowship.newRivendell(accounts[0]);
   });
+  it("Test constructor()", async function(){
+    for(i=1;i<=3;i++){
+      vars = await fellowship.getWalkerDetails(accounts[i])
+      assert(vars[0] > 0, "start date of new walker should be correct")
+      assert(vars[1] == i-1, "position in fellowship index should be correct")
+      assert(vars[2] * 1 == 3, "walker status should be correct (unfunded)")
+      assert(vars[3] == 0, "walker balance should be correct")
+      assert(vars[4] == 0, "walker reward balance should be correct")
+    }
+    vars = await fellowship.getFellowshipSize();
+    assert(vars == 3, "fellowship should be the correct size")
+    assert(await fellowship.stakeAmount.call() == web3.utils.toWei("10", "ether"), "stake amount should be correct")
+    
+  });
 
   it("Test New Walker", async function () {
     await fellowship.newWalker(accounts[4], "Gandalf")
@@ -45,6 +59,8 @@ contract("Fellowship Tests", function (accounts) {
     assert(vars[3] == web3.utils.toWei("10", "ether"), "walker balance should be correct")
     assert(vars[4] == 0, "walker reward balance should be correct")
     assert(vars[5] == "Gandalf")
+    await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), {from: accounts[5]});
+    await helpers.expectThrow(fellowship.depositStake(web3.utils.toWei("10", "ether"),{from:accounts[5]}));
   });
 
   it("Test Banish Walker", async function () {
@@ -58,6 +74,8 @@ contract("Fellowship Tests", function (accounts) {
     assert(vars[5] == "Aragorn")
     vars = await fellowship.getFellowshipSize();
     assert(vars == 2, "fellowship should be the correct size")
+    await helpers.expectThrow(fellowship.banishWalker(accounts[1]));
+  
   });
 
   it("Test Set Walker information", async function () {
@@ -86,11 +104,10 @@ contract("Fellowship Tests", function (accounts) {
     vars = await fellowship.getWalkerDetails(accounts[2])
     assert(vars[2] * 1 == 1, "walker status should be correct (active)")
   });
-
   it("Test New Rivendell", async function () {
     await fellowship.newRivendell(rivendell.address);
     assert(await fellowship.rivendell.call() == rivendell.address, "rivendell address should be correct")
-    await helpers.expectThrow(fellowship.newWalker(accounts[1], "fake walker"));
+    await helpers.expectThrow(fellowship.newWalker(accounts[1], "only rivendell should be able to run function"));
   });
   it("Test Slash Walker", async function () {
     await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), { from: accounts[1] });
@@ -123,6 +140,7 @@ contract("Fellowship Tests", function (accounts) {
     await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), { from: accounts[5] });
     await fellowship.depositPayment(web3.utils.toWei("10", "ether"), { from: accounts[5] })
     assert(await fellowship.rewardPool.call() == web3.utils.toWei("10", "ether"), "Reward Pool should be correct")
+    assert(await fellowship.payments.call(accounts[5]) == web3.utils.toWei("10", "ether"), "Payment mapping should be correct")
     await helpers.advanceTime(86400 * 30)
     await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), { from: accounts[4] });//run to increase time
     let reward = web3.utils.toWei("10", "ether") / 6 / 3;
@@ -149,6 +167,8 @@ contract("Fellowship Tests", function (accounts) {
       vars = await fellowship.getWalkerDetails(accounts[i])
       assert(vars[2] * 1 == 2, "walker status should be correct (Pending Withdraw)")
     }
+    await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), { from: accounts[1]});
+    await helpers.expectThrow(fellowship.depositStake(web3.utils.toWei("10", "ether"), { from: accounts[1] }));
     helpers.advanceTime(86400 * 15)
     for (i = 1; i < 4; i++) {
       await fellowship.withdrawStake({ from: accounts[i] })
