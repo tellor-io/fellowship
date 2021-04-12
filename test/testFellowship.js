@@ -72,6 +72,8 @@ contract("Fellowship Tests", function (accounts) {
     await fellowship.depositStake(web3.utils.toWei("10", "ether"), { from: accounts[1] })
     await token.approve(fellowship.address, web3.utils.toWei("100", "ether"), { from: accounts[2] });
     await fellowship.depositStake(web3.utils.toWei("100", "ether"), { from: accounts[2] })
+    vars = await fellowship.getWalkerDetails(accounts[1])
+    assert(vars[2] * 1 == 1, "walker status should be correct (active)")
     await fellowship.setStakeAmount(web3.utils.toWei("100", "ether"));
     await fellowship.newWalker(accounts[4], "Gandalf")
     await token.approve(fellowship.address, web3.utils.toWei("10", "ether"), { from: accounts[4] });

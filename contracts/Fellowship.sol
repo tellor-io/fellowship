@@ -212,7 +212,7 @@ contract Fellowship {
     function setStakeAmount(uint256 _amount) external onlyRivendell {
         stakeAmount = _amount;
         for (uint256 i = 0; i < fellowship.length; i++) {
-            if (walkers[fellowship[i]].balance < stakeAmount) {
+            if (walkers[fellowship[i]].status == Status.ACTIVE && walkers[fellowship[i]].balance < stakeAmount) {
                 walkers[fellowship[i]].status = Status.UNFUNDED;
             }
         }
