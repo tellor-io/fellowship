@@ -85,7 +85,7 @@ contract("Fellowship Tests", function (accounts) {
     assert(vars[2] * 1 == 1, "walker status should be correct (active)")
   });
 
-  it("Test New Rivendell, async function () {
+  it("Test New Rivendell", async function () {
     await fellowship.newRivendell(rivendell.address);
     assert(await fellowship.rivendell.call() == rivendell.address, "rivendell address should be correct")
     await helpers.expectThrow(fellowship.newWalker(accounts[1], "fake walker"));
