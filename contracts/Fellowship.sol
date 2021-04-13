@@ -223,9 +223,7 @@ contract Fellowship {
      * @param _input the key for the mapping
      * @param _output the result for the mapping
      **/
-    function setWalkerInformation(bytes32 _input, bytes memory _output)
-        external
-    {
+    function setWalkerInformation(bytes32 _input, bytes memory _output) external {
         require(
             isWalker(msg.sender) || msg.sender == rivendell,
             "must be a valid walker to use this function"
