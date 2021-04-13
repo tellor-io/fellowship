@@ -23,6 +23,11 @@ hardhat --network <networkName> deploy
 hardhat --network <networkName> etherscan-verify --api-key <api-key>
 ```
 
+#### Using the Fellowship
+
+The Fellowship is a completely flexible structure for providing trusted signers in any capacity.  It can support any chain (Ethereum or not) and can be as fast needed.  If you want to test using the Fellowship in your application, the Tellor Playground works as a testing structure for the Fellowship.  If you are interested in using the Fellowship in production or have questions, please reach out to us at [info@tellor.io](mailto:info@tellor.io)
+
+
 #### Contributors<a name="contributors"> </a>
 
 This repository is maintained by the Tellor team - [www.tellor.io](https://www.tellor.io)
@@ -30,4 +35,4 @@ This repository is maintained by the Tellor team - [www.tellor.io](https://www.t
 
 #### Copyright
 
-Tellor Inc. 2020
+Tellor Inc. 2021
