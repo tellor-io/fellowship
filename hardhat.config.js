@@ -11,6 +11,7 @@ require("@nomiclabs/hardhat-etherscan");
 //npx hardhat deploy  --net rinkeby --network rinkeby
 //npx hardhat deploy  --net mainnet --network mainnet
 //npx hardhat deploy  --net bsc_testnet --network bsc_testnet
+//npx hardhat deploy  --net arbitrum_testnet --network arbitrum_testnet
 
 task("deploy", "Deploy and verify the contracts")
   .addParam("net", "network to deploy in")
@@ -35,6 +36,10 @@ task("deploy", "Deploy and verify the contracts")
     } else if (net == "bsc") {
     console.log("fellowship contract deployed to:", "https://bscscan.com/address/" + fellowship.address);
     console.log("    transaction hash:", "https://bscscan.com/tx/" + fellowship.deployTransaction.hash);
+    } else if (net == "arbitrum_testnet"){
+    console.log("fellowship contract deployed to:","https://explorer.arbitrum.io/#/ "+ fellowship.address)
+    console.log("    transaction hash:", "https://explorer.arbitrum.io/#/tx/" + fellowship.deployTransaction.hash);
+
     } else {
         console.log("Please add network explorer details")
     }
@@ -47,11 +52,11 @@ task("deploy", "Deploy and verify the contracts")
 
     console.log('submitting contract for verification...');
 
-    await run("verify:verify", {
-      address: fellowship.address,
-      constructorArguments: [process.env.ORACLE, [process.env.WALKER_1,process.env.WALKER_2,process.env.WALKER_3] ]
-    },
-    )
+    // await run("verify:verify", {
+    //   address: fellowship.address,
+    //   constructorArguments: [process.env.ORACLE, [process.env.WALKER_1,process.env.WALKER_2,process.env.WALKER_3] ]
+    // },
+    // )
 
     console.log("Contract verified")
 
@@ -77,7 +82,10 @@ task("deploy", "Deploy and verify the contracts")
     } else if (net == "bsc") {
     console.log("rivendell contract deployed to:", "https://bscscan.com/address/" + rivendell.address);
     console.log("    transaction hash:", "https://bscscan.com/tx/" + rivendell.deployTransaction.hash);
-    } else {
+    } else if (net == "arbitrum_testnet"){
+      console.log("rivendell contract deployed to:","https://explorer.arbitrum.io/#/ "+ rivendell.address)
+      console.log("    transaction hash:", "https://explorer.arbitrum.io/#/tx/" + rivendell.deployTransaction.hash);
+    }  else {
         console.log("Please add network explorer details")
     }
 
@@ -89,11 +97,11 @@ task("deploy", "Deploy and verify the contracts")
 
     console.log('submitting contract for verification...');
 
-    await run("verify:verify", {
-      address: rivendell.address,
-      constructorArguments: [fellowship.address]
-    },
-    )
+    // await run("verify:verify", {
+    //   address: rivendell.address,
+    //   constructorArguments: [fellowship.address]
+    // },
+    // )
 
     console.log("Rivendell Contract verified")
 
@@ -132,12 +140,12 @@ module.exports = {
         gas: 10000000 ,
         gasPrice: 190000000000
       },
-      // mainnet: {
-      //   url: `${process.env.NODE_URL_MAINNET}`,
-      //   accounts: [process.env.ETH_PK],
-      //   gas: 12000000 ,
-      //   gasPrice: 190000000000
-      // } ,
+      mainnet: {
+        url: `${process.env.NODE_URL_MAINNET}`,
+        accounts: [process.env.ETH_PK],
+        gas: 12000000 ,
+        gasPrice: 190000000000
+      } ,
       bsc_testnet: {
         url: "https://data-seed-prebsc-1-s1.binance.org:8545",
         chainId: 97,
@@ -149,13 +157,32 @@ module.exports = {
         chainId: 56,
         gasPrice: 20000000000,
         accounts: [process.env.BSC_PK]
+      } ,
+      polygon_testnet: {
+        url: "https://rpc-mumbai.maticvigil.com/v1/" + process.env.MATIC_PK,
+        chainId: 80001,
+        gasPrice: 20000000000,
+        accounts: [process.env.ETH_PK]
+      } ,
+      polygon: {
+        url: "https://rpc-mainnet.maticvigil.com/v1/" + process.env.MUMBAI_MATIC_PK,
+        chainId: 137,
+        gasPrice: 20000000000,
+        accounts: [process.env.ETH_PK]
+      } ,
+      
+      arbitrum_testnet: {
+        url: "https://kovan4.arbitrum.io/rpc",
+        chainId: 212984383488152,
+        gasPrice: 20000000000,
+        accounts: [process.env.ETH_PK]
       } 
   },
   etherscan: {
       // Your API key for Etherscan
       // Obtain one at https://etherscan.io/
-      //apiKey: process.env.ETHERSCAN
-      apiKey: process.env.BSC_API
+      apiKey: process.env.ETHERSCAN
+      //apiKey: process.env.BSC_API
     },
 
     contractSizer: {
