@@ -37,8 +37,8 @@ contract Rivendell {
     }
 
     Weightings weights;
-    mapping(address => mapping(uint256 => bool)) voted; //mapping of address to mapping of ID's and bool if voted on said ID
-    mapping(uint256 => Vote) voteBreakdown; // mapping of ID to the details of the vote
+    mapping(address => mapping(uint256 => bool)) public voted; //mapping of address to mapping of ID's and bool if voted on said ID
+    mapping(uint256 => Vote) public voteBreakdown; // mapping of ID to the details of the vote
     uint256 public voteCount; //Total number of votes handled by Rivendell contract
     address public fellowship; // address of the fellowship contract.
 
@@ -54,7 +54,7 @@ contract Rivendell {
      */
     constructor(address _fellowship) {
         fellowship = _fellowship;
-        setWeights(200, 400, 400);
+        _setWeights(200, 400, 400);
     }
 
     /**
@@ -116,10 +116,10 @@ contract Rivendell {
         if (voteBreakdown[_id].payeeCount == 0) {
             denominator -= weights.userWeight;
         }
+        voteBreakdown[_id].executed = true;
         if (voteBreakdown[_id].tally > denominator / 2) {
             (_succ, _res) = _destination.call(_data);
         }
-        voteBreakdown[_id].executed = true;
         emit VoteSettled(_id, voteBreakdown[_id].tally > denominator / 2);
     }
 
@@ -237,7 +237,7 @@ contract Rivendell {
      * @param _walker weight of walkers
      * @param _user weight of users of the Fellowship
      **/
-    function setWeights(
+    function _setWeights(
         uint256 _trb,
         uint256 _walker,
         uint256 _user

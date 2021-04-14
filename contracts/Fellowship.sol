@@ -212,7 +212,7 @@ contract Fellowship {
     function setStakeAmount(uint256 _amount) external onlyRivendell {
         stakeAmount = _amount;
         for (uint256 i = 0; i < fellowship.length; i++) {
-            if (walkers[fellowship[i]].balance < stakeAmount) {
+            if (walkers[fellowship[i]].status == Status.ACTIVE && walkers[fellowship[i]].balance < stakeAmount) {
                 walkers[fellowship[i]].status = Status.UNFUNDED;
             }
         }
@@ -223,9 +223,7 @@ contract Fellowship {
      * @param _input the key for the mapping
      * @param _output the result for the mapping
      **/
-    function setWalkerInformation(bytes32 _input, bytes memory _output)
-        external
-    {
+    function setWalkerInformation(bytes32 _input, bytes memory _output) external {
         require(
             isWalker(msg.sender) || msg.sender == rivendell,
             "must be a valid walker to use this function"
