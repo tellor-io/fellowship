@@ -1,4 +1,4 @@
-## The Fellowship (DRAFT)
+## The Fellowship
 
 <img src="./public/fellowship.png">
 
